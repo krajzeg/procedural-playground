@@ -38,12 +38,16 @@
 
         		var mesh = createBallMesh(1, 50, 50);
 
-        		/*var vertices = [-1,-1,0, 1,-1,0, 0,1,0];
-        		var colors = [1,0,0, 1,1,0, 0,0.5,1];*/
-
         		var posBuffer = new glu.Buffer(mesh.vertices, 3, gl.FLOAT);
         		var colorBuffer = new glu.Buffer(mesh.colors, 3, gl.FLOAT);
+        		var normalBuffer = new glu.Buffer(mesh.normals, 3, gl.FLOAT);
         		var indexBuffer = new glu.Buffer(mesh.indices, 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
+
+        		// =============== light
+
+        		var lightDir = vec3.create();
+        		vec3.normalize(lightDir, [1,-1,1]);
+        		console.log(lightDir);
 
         		// =============== draw!
 
@@ -51,12 +55,16 @@
         			mPerspective: matPerspective,
 
         			aPosition: posBuffer,
-        			aColor: colorBuffer,        			
-        			uTint: [1,1,1]
+        			aColor: colorBuffer, 
+        			aNormal: normalBuffer,
+
+        			uvLightDir: lightDir,
+        			ulAmbient: 0.05,
+        			ulDiffuse: 0.95,
         		});
 
        			var yRotation = 0.0;
-       			var matModel = mat4.create();
+       			var matModel = mat4.create(), matModelRotation = mat4.create();
 
         		function drawFrame() {
         			if (pause) {
@@ -70,10 +78,15 @@
         			mat4.rotateZ(matModel, matModel, -0.2);
         			mat4.rotateY(matModel, matModel, yRotation);
 
+        			mat4.identity(matModelRotation);
+        			mat4.rotateZ(matModelRotation, matModelRotation, -0.2);
+        			mat4.rotateY(matModelRotation, matModelRotation, yRotation);
+
 					gl.clear(gl.COLOR_BUFFER_BIT);
 
         			shader.set({
-        				mModel: matModel
+        				mModel: matModel,
+        				mModelRotation: matModelRotation
         			});
     				glu.drawTriangles(indexBuffer);
 
@@ -87,26 +100,37 @@
 		<script id="shader-vertex" type="x-shader/x-vertex">
 			uniform mat4 mPerspective;
 			uniform mat4 mModel;
+			uniform mat4 mModelRotation;
 
 			attribute vec3 aPosition;
 			attribute vec3 aColor;
+			attribute vec3 aNormal;
 
 			varying vec3 vColor;
+			varying vec3 vNormal;
 
 			void main(void) {
-				vColor = aColor;				
+				vColor = aColor;
+				vNormal = (mModelRotation * vec4(aNormal, 1.0)).xyz;
+
         		gl_Position = mPerspective * mModel * vec4(aPosition, 1.0);
 			}
 		</script>
 
 		<script id="shader-fragment" type="x-shader/x-fragment">
 			precision mediump float;			
+			
 			varying vec3 vColor;
+			varying vec3 vNormal;
 
-			uniform vec3 uTint;
+			uniform vec3 uvLightDir;
+			uniform float ulAmbient;
+			uniform float ulDiffuse;
 
 			void main(void) {
-				gl_FragColor = vec4(uTint * vColor, 1.0);
+				float diffuseLight = max(0.0, dot(vNormal, -uvLightDir));
+				vec3 adjustedColor = vColor * (ulAmbient + ulDiffuse * diffuseLight);
+				gl_FragColor = vec4(adjustedColor, 1.0);
 			}
 		</script>
 

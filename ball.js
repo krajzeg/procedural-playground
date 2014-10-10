@@ -1,5 +1,5 @@
 function createBallMesh(radius, slices, stacks) {
-	var vertices = [], colors = [];
+	var vertices = [], colors = [], normals = [];
 
 	// create vertices
 	for (var slice = 0; slice <= slices; slice++) {
@@ -14,6 +14,10 @@ function createBallMesh(radius, slices, stacks) {
 
 			vertices.push(x, y, z);
 			colors.push(Math.abs(x), Math.abs(y), Math.abs(z));
+
+			var normal = vec3.create();
+			vec3.normalize(normal, [x,y,z]);
+			normals.push.apply(normals, normal);
 		}
 	}
 
@@ -35,6 +39,7 @@ function createBallMesh(radius, slices, stacks) {
 	return {
 		vertices: vertices,
 		colors: colors,
+		normals: normals,
 		indices: indices
 	};
 }

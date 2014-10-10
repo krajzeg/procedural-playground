@@ -5,6 +5,7 @@ var GLUtils = function(glContext) {
 	// ============ constants
 
 	var UniformSetters = {
+		'float': gl.uniform1f,
 		'vec1': gl.uniform1fv,
 		'vec2': gl.uniform2fv,
 		'vec3': gl.uniform3fv,
