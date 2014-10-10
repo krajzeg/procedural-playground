@@ -5,10 +5,11 @@ var GLUtils = function(glContext) {
 	// ============ constants
 
 	var UniformSetters = {
-		'vec1': 'uniform1fv',
-		'vec2': 'uniform2fv',
-		'vec3': 'uniform3fv',
-		'vec4': 'uniform4fv'
+		'vec1': gl.uniform1fv,
+		'vec2': gl.uniform2fv,
+		'vec3': gl.uniform3fv,
+		'vec4': gl.uniform4fv,
+		'mat4': function(uniform, value) { gl.uniformMatrix4fv(uniform, false, value); }
 	}
 
 	// ============ buffers
@@ -103,11 +104,11 @@ var GLUtils = function(glContext) {
 
 		setUniform: function(name, value) {
 			var uniform = this.uniforms[name];
-			var setterName = UniformSetters[uniform.type];
-			if (!setterName)
+			var setter = UniformSetters[uniform.type];
+			if (!setter)
 				throw "I don't know how to set uniforms of type " + uniform.type + ".";
 			
-			gl[setterName](uniform.location, value);
+			setter.apply(gl, [uniform.location, value]);
 		},
 
 		compileShader: function(type, text) {
