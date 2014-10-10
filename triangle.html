@@ -1,0 +1,76 @@
+<html>
+	<head>
+		<style type="text/css">
+			body { background: black; }
+		</style>
+		<script src="bower_components/underscore/underscore.js"></script>
+		<script src="wgl-utils.js"></script>
+
+		<script>			
+			window.onload = function() {
+				var canvas = document.getElementById('cnv');
+				gl = canvas.getContext('webgl');
+
+				gl.clearColor(0, 0, 0, 1);
+				gl.clear(gl.COLOR_BUFFER_BIT);	
+				gl.viewport(0, 0, canvas.width, canvas.height);			
+				gl.disable(gl.DEPTH_TEST);
+
+				// ============== shader setup
+
+				var glu = GLUtils(gl);
+				var shader = new glu.ShaderProgram(
+					document.getElementById('shader-vertex').innerHTML,
+					document.getElementById('shader-fragment').innerHTML
+				);
+				shader.use();
+
+        		// =============== create a triangle
+
+        		var vertices = [-1,-1, 1,-1, 0,1];
+        		var colors = [1,0,0, 1,1,0, 0,1,0];
+
+        		var posBuffer = new glu.Buffer(vertices, 2, gl.FLOAT);
+        		var colorBuffer = new glu.Buffer(colors, 3, gl.FLOAT);
+        		var indexBuffer = new glu.Buffer([0,1,2], 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
+
+        		// =============== draw!
+
+        		shader.set({
+        			aPosition: posBuffer,
+        			aColor: colorBuffer,
+        			uTint: [1,1,1]
+        		});
+
+        		glu.drawTriangles(indexBuffer);
+			};
+		</script>
+
+		<script id="shader-vertex" type="x-shader/x-vertex">
+			attribute vec2 aPosition;
+			attribute vec3 aColor;
+
+			varying vec3 vColor;
+
+			void main(void) {
+        		gl_Position = vec4(aPosition, 1.0, 1.0);
+        		vColor = aColor;
+			}
+		</script>
+
+		<script id="shader-fragment" type="x-shader/x-fragment">
+			precision mediump float;			
+			varying vec3 vColor;
+
+			uniform vec3 uTint;
+
+			void main(void) {
+				gl_FragColor = vec4(uTint * vColor, 1.0);
+			}
+		</script>
+
+	</head>
+	<body>
+		<canvas id="cnv" width="640" height="640"></canvas>
+	</body>
+</html>
