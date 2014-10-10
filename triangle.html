@@ -31,7 +31,7 @@
 
         		// =============== create a triangle
 
-        		var vertices = [-1,-1,-2, 1,-1,-3, 0,1,-2];
+        		var vertices = [-1,-1,0, 1,-1,0, 0,1,0];
         		var colors = [1,0,0, 1,1,0, 0,0.5,1];
 
         		var posBuffer = new glu.Buffer(vertices, 3, gl.FLOAT);
@@ -48,19 +48,40 @@
         			uTint: [1,1,1]
         		});
 
-        		glu.drawTriangles(indexBuffer);
+       			var yRotation = 0.0;
+       			var matModel = mat4.create();
+
+        		function drawFrame() {
+        			yRotation += 0.04;
+
+        			mat4.identity(matModel);
+        			mat4.translate(matModel, matModel, [0,0,-4]);
+        			mat4.rotateY(matModel, matModel, yRotation);
+
+        			shader.set({
+        				mModel: matModel
+        			});
+					gl.clear(gl.COLOR_BUFFER_BIT);
+    				glu.drawTriangles(indexBuffer);
+
+    				requestAnimationFrame(drawFrame);
+        		};
+
+    			drawFrame();
 			};
 		</script>
 
 		<script id="shader-vertex" type="x-shader/x-vertex">
 			uniform mat4 mPerspective;
+			uniform mat4 mModel;
+
 			attribute vec3 aPosition;
 			attribute vec3 aColor;
 
 			varying vec3 vColor;
 
 			void main(void) {
-        		gl_Position = mPerspective * vec4(aPosition, 1.0);
+        		gl_Position = mPerspective * mModel * vec4(aPosition, 1.0);
         		vColor = aColor;
 			}
 		</script>
