@@ -6,8 +6,11 @@
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/gl-matrix/dist/gl-matrix.js"></script>
 		<script src="wgl-utils.js"></script>
+		<script src="ball.js"></script>
 
-		<script>			
+		<script>
+			var pause = false;
+
 			window.onload = function() {
 				var canvas = document.getElementById('cnv');
 				gl = canvas.getContext('webgl');
@@ -16,6 +19,8 @@
 				gl.clear(gl.COLOR_BUFFER_BIT);	
 				gl.viewport(0, 0, canvas.width, canvas.height);			
 				gl.disable(gl.DEPTH_TEST);
+				gl.enable(gl.CULL_FACE);
+        		gl.cullFace(gl.BACK);
 
 				var matPerspective = mat4.create();
 				mat4.perspective(matPerspective, 45, canvas.width / canvas.height, 0.1, 100.0);
@@ -29,14 +34,16 @@
 				);
 				shader.use();
 
-        		// =============== create a triangle
+        		// =============== create a ball
 
-        		var vertices = [-1,-1,0, 1,-1,0, 0,1,0];
-        		var colors = [1,0,0, 1,1,0, 0,0.5,1];
+        		var mesh = createBallMesh(1, 50, 50);
 
-        		var posBuffer = new glu.Buffer(vertices, 3, gl.FLOAT);
-        		var colorBuffer = new glu.Buffer(colors, 3, gl.FLOAT);
-        		var indexBuffer = new glu.Buffer([0,1,2], 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
+        		/*var vertices = [-1,-1,0, 1,-1,0, 0,1,0];
+        		var colors = [1,0,0, 1,1,0, 0,0.5,1];*/
+
+        		var posBuffer = new glu.Buffer(mesh.vertices, 3, gl.FLOAT);
+        		var colorBuffer = new glu.Buffer(mesh.colors, 3, gl.FLOAT);
+        		var indexBuffer = new glu.Buffer(mesh.indices, 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
 
         		// =============== draw!
 
@@ -52,16 +59,22 @@
        			var matModel = mat4.create();
 
         		function drawFrame() {
-        			yRotation += 0.04;
+        			if (pause) {
+        				return requestAnimationFrame(drawFrame);
+        			}
+
+        			yRotation += 0.02;
 
         			mat4.identity(matModel);
         			mat4.translate(matModel, matModel, [0,0,-4]);
+        			mat4.rotateZ(matModel, matModel, -0.2);
         			mat4.rotateY(matModel, matModel, yRotation);
+
+					gl.clear(gl.COLOR_BUFFER_BIT);
 
         			shader.set({
         				mModel: matModel
         			});
-					gl.clear(gl.COLOR_BUFFER_BIT);
     				glu.drawTriangles(indexBuffer);
 
     				requestAnimationFrame(drawFrame);
@@ -81,8 +94,8 @@
 			varying vec3 vColor;
 
 			void main(void) {
+				vColor = aColor;				
         		gl_Position = mPerspective * mModel * vec4(aPosition, 1.0);
-        		vColor = aColor;
 			}
 		</script>
 
