@@ -46,7 +46,7 @@
         		// =============== light
 
         		var lightDir = vec3.create();
-        		vec3.normalize(lightDir, [1,-1,1]);
+        		vec3.normalize(lightDir, [0.5,-0.5,1]);
         		console.log(lightDir);
 
         		// =============== draw!
@@ -59,8 +59,8 @@
         			aNormal: normalBuffer,
 
         			uvLightDir: lightDir,
-        			ulAmbient: 0.05,
-        			ulDiffuse: 0.95,
+        			ulAmbient: 0.08,
+        			ulDiffuse: 0.92,
         		});
 
        			var yRotation = 0.0;
