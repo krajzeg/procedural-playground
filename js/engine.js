@@ -5,7 +5,8 @@ window.Engine = function() {
         this.setupBall();
         this.setupLight();
         this.setupState();
-        this.useNewPlanet(generatePlanet());
+
+        this.generatePlanet('earthlike');
     }
 
     Engine.prototype = {
@@ -57,6 +58,10 @@ window.Engine = function() {
 
         setupState: function () {
             this.rotation = 0.0;
+        },
+
+        generatePlanet: function(type) {
+            this.useNewPlanet(Engine.planetTypes[type]());
         },
 
         useNewPlanet: function (planet) {
@@ -130,3 +135,5 @@ window.Engine = function() {
 
     return Engine;
 }();
+
+Engine.planetTypes = {};

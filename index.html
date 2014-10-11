@@ -5,23 +5,24 @@
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/gl-matrix/gl-matrix.js"></script>
 
-        <script src="texture-buffers.js"></script>
-        <script src="generation.js"></script>
-        <script src="playground.js"></script>
+        <script src="js/procgen/texture-buffers.js"></script>
+        <script src="js/procgen/procgen.js"></script>
 
-        <script src="simplex.js"></script>
-		<script src="wgl-utils.js"></script>
-		<script src="ball.js"></script>
-        <script src="engine.js"></script>
+        <script src="js/procgen/simplex-noise.js"></script>
+		<script src="js/webgl/wgl-utils.js"></script>
+		<script src="js/webgl/wgl-ball.js"></script>
+        <script src="js/engine.js"></script>
 
-		<script>
+        <script src="js/planets/earthlike.js"></script>
+
+        <script>
 			window.onload = function() {
                 // initialize our rendering engine
                 var engine = new Engine();
 
                 // bind UI events
                 document.getElementById('btn-regenerate').addEventListener('click', function() {
-                    engine.useNewPlanet(generatePlanet());
+                    engine.generatePlanet('earthlike');
                     return false;
                 });
 
