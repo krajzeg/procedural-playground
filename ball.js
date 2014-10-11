@@ -14,12 +14,12 @@ function createBallMesh(radius, slices, stacks) {
 
 			vertices.push(x, y, z);
 			colors.push(Math.abs(x), Math.abs(y), Math.abs(z));
+
             textureCoords.push(stack / stacks, slice / slices);
 
 			var normal = [x,y,z];
 			vec3.normalize(normal);
 			normals.push.apply(normals, normal);
-
 		}
 	}
 
