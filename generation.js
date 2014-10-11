@@ -1,8 +1,15 @@
+/**
+ * Creates a 32-bit ABGR color based on just the 0-255 RGB values.
+ * @param {number} r red component, 0-255
+ * @param {number} g green component, 0-255
+ * @param {number} b blue component, 0-255
+ * @returns {number} a 32-bit ABGR value
+ */
 function rgb(r, g, b) {
     return 0xFF000000 | (b << 16) | (g << 8) | r;
 }
 
-window.Generation = function(textureWidth, textureHeight) {
+window.ProcGen = function(textureWidth, textureHeight) {
 
     return {
         simplexNoise: simplexNoise,

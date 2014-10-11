@@ -2,7 +2,7 @@
 var textureWidth = 1024, textureHeight = 512;
 
 // Procgen is a helper object we will be using to generate them
-var procgen = Generation(textureWidth, textureHeight);
+var procgen = ProcGen(textureWidth, textureHeight);
 
 
 /**

@@ -1,8 +1,7 @@
 <html>
 	<head>
-		<style type="text/css">
-			body { background: black; }
-		</style>
+        <link href="css/styles.css" rel="stylesheet" type="text/css">
+
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/gl-matrix/gl-matrix.js"></script>
 
@@ -13,106 +12,27 @@
         <script src="simplex.js"></script>
 		<script src="wgl-utils.js"></script>
 		<script src="ball.js"></script>
+        <script src="engine.js"></script>
 
 		<script>
-			var pause = false;
-
 			window.onload = function() {
-				var canvas = document.getElementById('cnv');
-				gl = canvas.getContext('webgl');
+                // initialize our rendering engine
+                var engine = new Engine();
 
-				gl.clearColor(0, 0, 0, 1);
-				gl.clear(gl.COLOR_BUFFER_BIT);	
-				gl.viewport(0, 0, canvas.width, canvas.height);			
-				gl.disable(gl.DEPTH_TEST);
-				gl.enable(gl.CULL_FACE);
-        		gl.cullFace(gl.BACK);
-
-				var matPerspective = mat4.create();
-				mat4.perspective(45, 1, 0.1, 100.0, matPerspective);
-
-                // ============== textures
-
-                var glu = GLUtils(gl);
-
-                var planet = generatePlanet();
-                var colorTexture = planet.colorMap.toTexture(glu);
-
-				// ============== shader setup
-
-				var shader = new glu.ShaderProgram(
-					document.getElementById('shader-vertex').innerHTML,
-					document.getElementById('shader-fragment').innerHTML
-				);
-				shader.use();
-
-        		// =============== create a ball
-
-        		var mesh = createBallMesh(1, 50, 50);
-
-        		var posBuffer = new glu.Buffer(mesh.vertices, 3, gl.FLOAT);
-        		var colorBuffer = new glu.Buffer(mesh.colors, 3, gl.FLOAT);
-        		var normalBuffer = new glu.Buffer(mesh.normals, 3, gl.FLOAT);
-                var texCoordsBuffer = new glu.Buffer(mesh.textureCoords, 2, gl.FLOAT);
-        		var indexBuffer = new glu.Buffer(mesh.indices, 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
-
-        		// =============== light
-
-        		var lightDir = [0.5,-0.5,-1];
-        		vec3.normalize(lightDir);
-
-        		// =============== draw!
-
-        		shader.set({
-        			mPerspective: matPerspective,
-
-        			aPosition: posBuffer,
-        			aColor: colorBuffer, 
-        			aNormal: normalBuffer,
-                    aTextureCoords: texCoordsBuffer,
-
-        			uvLightDir: lightDir,
-        			ulAmbient: 0.18,
-        			ulDiffuse: 0.82
-        		});
-                shader.bindTextures({
-                    tColor: colorTexture
+                // bind UI events
+                document.getElementById('btn-regenerate').addEventListener('click', function() {
+                    engine.useNewPlanet(generatePlanet());
+                    return false;
                 });
 
-       			var yRotation = 0.0;
-       			var matModel = mat4.create(), matModelRotation = mat4.create();
-
-        		function drawFrame() {
-        			if (pause) {
-        				return requestAnimationFrame(drawFrame);
-        			}
-
-        			yRotation += 0.005;
-
-        			mat4.identity(matModel);
-        			mat4.translate(matModel, [0,0,-2.8]);
-                    mat4.rotateX(matModel, 0.4);
-                    mat4.rotateZ(matModel, -0.2);
-                    mat4.rotateY(matModel, yRotation);
-
-        			mat4.identity(matModelRotation);
-                    mat4.rotateX(matModelRotation, 0.4);
-                    mat4.rotateZ(matModelRotation, -0.2);
-                    mat4.rotateY(matModelRotation, yRotation);
-
-					gl.clear(gl.COLOR_BUFFER_BIT);
-
-        			shader.set({
-        				mModel: matModel,
-        				mModelRotation: matModelRotation
-        			});
-    				glu.drawTriangles(indexBuffer);
-
-    				requestAnimationFrame(drawFrame);
-        		}
-
-    			drawFrame();
-			};
+                // kickstart rendering
+                requestAnimationFrame(processFrame);
+                function processFrame() {
+                    engine.tick();
+                    engine.render();
+                    requestAnimationFrame(processFrame);
+                }
+            };
 		</script>
 
 		<script id="shader-vertex" type="x-shader/x-vertex">
@@ -161,7 +81,13 @@
 		</script>
 
 	</head>
+
 	<body>
-		<canvas id="cnv" width="512" height="512"></canvas>
+        <div id="main">
+		    <canvas id="main-canvas" width="512" height="512"></canvas>
+            <div class="control-panel">
+                <a href="#" id="btn-regenerate">Regenerate!</a>
+            </div>
+        </div>
 	</body>
 </html>
