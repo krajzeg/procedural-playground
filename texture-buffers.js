@@ -1,24 +1,21 @@
 var Buffers = function(){
 
-    var FloatBuffer = {
-        getFloat: function(x,y) {
-            return this[y * this.width + x];
+    function FloatBuffer(width, height) {
+        this.array = new Float32Array(width * height);
+
+        this.width = width;
+        this.height = height;
+    }
+    FloatBuffer.prototype = {
+        get: function(x,y) {
+            return this.array[y * this.width + x];
         },
 
-        setFloat: function(x, y, value) {
-            this[y * this.width + x] = value;
+        set: function(x, y, v) {
+            this.array[y * this.width + x] = v;
         }
     };
-    FloatBuffer.__proto__ = Float32Array;
-    function createFloatBuffer(width, height) {
-        var array = new Float32Array(width * height);
-        array.width = width;
-        array.height = height;
-        array.__proto__ = FloatBuffer;
-        return array;
-    }
 
-    RGBBuffer.__proto__ = Uint32Array;
     function RGBBuffer(width, height) {
         this.array = new Uint32Array(width * height);
 
@@ -48,6 +45,10 @@ var Buffers = function(){
     return {
         rgb: function(width, height) {
             return new RGBBuffer(width, height);
+        },
+
+        float: function(width, height) {
+            return new FloatBuffer(width, height);
         }
     };
 }();
