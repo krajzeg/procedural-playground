@@ -6,6 +6,8 @@
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/gl-matrix/gl-matrix.js"></script>
 
+        <script src="texture-buffers.js"></script>
+
         <script src="simplex.js"></script>
 		<script src="wgl-utils.js"></script>
 		<script src="ball.js"></script>
@@ -34,16 +36,18 @@
                 var data = new Uint32Array(1024 * 512);
                 var endLoc = 1024 * 512;
 
-                var baseNoise = SimplexNoise.xWrappingNoise2D.bind(null, 1024 * 0.002);
-                for (var loc = 0; loc < endLoc; loc++) {
-                    var x = loc & 0x3ff;
-                    var y = loc >> 10;
-
-                    var noise = SimplexNoise.summedNoise2D(baseNoise, 6, 0.002, x, y);
-                    var color = Math.floor(noise * 127 + 128);
-                    data[loc] = 0xFF000000 | (0x010101 * color);
+                var baseNoise = SimplexNoise.xWrappingNoise2D.bind(null, 1024 * 0.001);
+                var colorBuffer = Buffers.rgb(1024, 512);
+                for (var y = 0; y < 512; y++) {
+                    for (var x = 0; x < 1024; x++) {
+                        var noise = SimplexNoise.summedNoise2D(baseNoise, 7, 0.001, x, y);
+                        if (noise > 0.1)
+                            colorBuffer.setRGB(x, y, 160 + noise * 40, 100 + noise * 60, noise * 80);
+                        else
+                            colorBuffer.setRGB(x, y, 40, 40, 180);
+                    }
                 }
-                var colorTexture = new glu.Texture(1024, 512, new Uint8Array(data.buffer));
+                var colorTexture = colorBuffer.toTexture(glu);
 
 				// ============== shader setup
 

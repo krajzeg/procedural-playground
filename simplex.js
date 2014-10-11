@@ -181,28 +181,24 @@ var SimplexNoise = function () {
         if (t0 < 0) n0 = 0.0;
         else {
             t0 *= t0;
-            //console.log(Gradients3D[gi0], gi0, [x0, y0, z0]);
             n0 = t0 * t0 * vec3.dot(Gradients3D[gi0], [x0, y0, z0]);
         }
         var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
         if (t1 < 0) n1 = 0.0;
         else {
             t1 *= t1;
-//            console.log(Gradients3D[gi1], gi1, [x1, y1, z1]);
             n1 = t1 * t1 * vec3.dot(Gradients3D[gi1], [x1, y1, z1]);
         }
         var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
         if (t2 < 0) n2 = 0.0;
         else {
             t2 *= t2;
-//            console.log(Gradients3D[gi2], gi2, [x2, y2, z2]);
             n2 = t2 * t2 * vec3.dot(Gradients3D[gi2], [x2, y2, z2]);
         }
         var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
         if (t3 < 0) n3 = 0.0;
         else {
             t3 *= t3;
-//            console.log(Gradients3D[gi3], gi3, [x3, y3, z3]);
             n3 = t3 * t3 * vec3.dot(Gradients3D[gi3], [x3, y3, z3]);
         }
         // Add contributions from each corner to get the final noise value.
