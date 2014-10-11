@@ -5,11 +5,11 @@ function rgb(r, g, b) {
 window.Generation = function(textureWidth, textureHeight) {
 
     return {
-        floatFromFn: floatFromFn,
+        floatFromXY: floatFromXY,
         derivedRGB: derivedRGB
     };
 
-    function floatFromFn(fn) {
+    function floatFromXY(fn) {
         var output = Buffers.float(textureWidth, textureHeight);
         var outputArray = output.array;
         var x = 0, y = 0, wrapX = textureWidth;

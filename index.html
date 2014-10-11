@@ -8,6 +8,7 @@
 
         <script src="texture-buffers.js"></script>
         <script src="generation.js"></script>
+        <script src="playground.js"></script>
 
         <script src="simplex.js"></script>
 		<script src="wgl-utils.js"></script>
@@ -34,20 +35,8 @@
 
                 var glu = GLUtils(gl);
 
-                var procgen = Generation(1024, 512);
-
-                var baseNoiseFn = SimplexNoise.xWrappingNoise2D.bind(null, 1024 * 0.001);
-                var noiseFn = SimplexNoise.summedNoise2D.bind(0, baseNoiseFn, 7, 0.001);
-
-                var noise = procgen.floatFromFn(noiseFn);
-                var color = procgen.derivedRGB([noise], function(noise) {
-                    if (noise > 0.1)
-                        return rgb(160 + noise * 40, 100 + noise * 60, noise * 80);
-                    else
-                        return rgb(40, 40, 130 + noise * 40);
-                });
-
-                var colorTexture = color.toTexture(glu);
+                var planet = generatePlanet();
+                var colorTexture = planet.colorMap.toTexture(glu);
 
 				// ============== shader setup
 
