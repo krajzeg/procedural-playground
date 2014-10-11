@@ -1,13 +1,17 @@
 // We will be using 1024 x 512 textures.
+var textureWidth = 1024, textureHeight = 512;
+
 // Procgen is a helper object we will be using to generate them
-var procgen = Generation(1024, 512);
+var procgen = Generation(textureWidth, textureHeight);
 
 
+/**
+ * This function here is the meat of the whole procedural generation.
+ */
 function generatePlanet() {
 
-    var baseNoiseFn = SimplexNoise.xWrappingNoise2D.bind(null, 1024 * 0.001);
-    var noiseFn = SimplexNoise.summedNoise2D.bind(0, baseNoiseFn, 7, 0.001);
-    var noise = procgen.floatFromXY(noiseFn);
+    var seed = Math.random() * 32767.0;
+    var noise = procgen.simplexNoise(seed, 7, 1.0);
 
     var colorMap = procgen.derivedRGB([noise], function(noise) {
         if (noise > 0.105)

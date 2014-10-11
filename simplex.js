@@ -58,12 +58,28 @@ var SimplexNoise = function () {
 
     return {
         noise3D: noise3D,
-        xWrappingNoise2D: xWrappingNoise2D,
-        summedNoise2D: summedNoise2D
+
+        makeXWrapped2dNoise: makeXWrapped2DNoise,
+        makeOctaveNoise: makeOctaveNoise
     };
 
     // ========================================================================================
 
+    function makeOctaveNoise(seed, baseNoiseMaker, octaves, firstOctaveScale) {
+        var noises = _.range(0, octaves).map(function() {
+            seed = (seed * 15227 + 11699) % 32987;
+            return baseNoiseMaker(seed);
+        });
+        return function(x, y) {
+            var multiplier = 0.5, sum = 0.0, scale = firstOctaveScale;
+            noises.map(function(noise) {
+                sum += multiplier * noise(x * scale, y * scale);
+                multiplier *= 0.5;
+                scale *= 2;
+            });
+            return sum;
+        }
+    }
     function summedNoise2D(baseNoiseFn, octaves, scale, xIn, yIn) {
         var multiplier = 0.5, sum = 0.0;
         for (var i = 0; i < octaves; i++) {
@@ -76,12 +92,16 @@ var SimplexNoise = function () {
 
     // ========================================================================================
 
-    function xWrappingNoise2D(tileWidth, xin, yin) {
-        var angle = xin / tileWidth * Math.PI * 2;
-        var mappedX = Math.sin(angle) * tileWidth;
-        var mappedY = yin * Math.PI * 2;
-        var mappedZ = Math.cos(angle) * tileWidth;
-        return noise3D(mappedX, mappedY, mappedZ);
+    function makeXWrapped2DNoise(seed, tileWidth) {
+        var TwoPi = Math.PI * 2;
+        var angleMultiplier = TwoPi / tileWidth;
+        return function(x, y) {
+            var angle = x * angleMultiplier;
+            var mappedX = Math.sin(angle) * tileWidth;
+            var mappedZ = Math.cos(angle) * tileWidth + seed;
+            var mappedY = y * TwoPi;
+            return noise3D(mappedX, mappedY, mappedZ);
+        }
     }
 
     // ========================================================================================

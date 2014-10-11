@@ -5,9 +5,21 @@ function rgb(r, g, b) {
 window.Generation = function(textureWidth, textureHeight) {
 
     return {
+        simplexNoise: simplexNoise,
+
         floatFromXY: floatFromXY,
         derivedRGB: derivedRGB
     };
+
+    function simplexNoise(seed, octaveCount, roughness) {
+        var scale = roughness / textureWidth;
+
+        var baseNoise = function(innerSeed) {
+            return SimplexNoise.makeXWrapped2dNoise(innerSeed, textureWidth * scale);
+        };
+        var octaveNoise = SimplexNoise.makeOctaveNoise(seed, baseNoise, octaveCount, scale);
+        return floatFromXY(octaveNoise);
+    }
 
     function floatFromXY(fn) {
         var output = Buffers.float(textureWidth, textureHeight);
