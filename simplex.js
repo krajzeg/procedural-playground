@@ -72,22 +72,13 @@ var SimplexNoise = function () {
         });
         return function(x, y) {
             var multiplier = 0.5, sum = 0.0, scale = firstOctaveScale;
-            noises.map(function(noise) {
-                sum += multiplier * noise(x * scale, y * scale);
+            for (var i = 0; i < octaves; i++) {
+                sum += multiplier * noises[i](x * scale, y * scale);
                 multiplier *= 0.5;
                 scale *= 2;
-            });
+            }
             return sum;
         }
-    }
-    function summedNoise2D(baseNoiseFn, octaves, scale, xIn, yIn) {
-        var multiplier = 0.5, sum = 0.0;
-        for (var i = 0; i < octaves; i++) {
-            sum += multiplier * baseNoiseFn(xIn * scale, yIn * scale);
-            multiplier *= 0.5;
-            scale *= 2;
-        }
-        return sum;
     }
 
     // ========================================================================================
