@@ -70,8 +70,12 @@ var GLUtils = function(glContext) {
         	gl.bindTexture(gl.TEXTURE_2D, this.id);
     	}
     };
+    Texture.fromRGBBuffer = function(buffer) {
+        var byteArray = new Uint8Array(buffer.array.buffer);
+        return new Texture(buffer.width, buffer.height, byteArray);
+    };
 
-	// ============ shader support
+    // ============ shader support
 
 	function ShaderProgram(vertexScript, fragmentScript) {
 		this.attributes = {};

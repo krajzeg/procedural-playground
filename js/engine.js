@@ -61,7 +61,18 @@ window.Engine = function() {
         },
 
         generatePlanet: function(type) {
-            this.useNewPlanet(Engine.planetTypes[type]());
+            var self = this;
+            var planetWorker = new Worker('js/procgen/worker.js');
+            planetWorker.addEventListener('message', function(evt) {
+                var msg = evt.data;
+                if (msg.type == 'log')
+                    console.log("WORKER: " + msg.msg);
+                else {
+                    console.log(msg.planet);
+                    self.useNewPlanet(msg.planet);
+                }
+            });
+            planetWorker.postMessage({start: "now!"});
         },
 
         useNewPlanet: function (planet) {
@@ -69,7 +80,7 @@ window.Engine = function() {
 
             _.extend(planet, {
                 textures: {
-                    color: planet.colorMap.toTexture(glu)
+                    color: glu.Texture.fromRGBBuffer(planet.colorMap)
                 }
             });
 
@@ -77,7 +88,7 @@ window.Engine = function() {
         },
 
         tick: function () {
-            this.rotation += 0.002;
+            this.rotation -= 0.002;
         },
 
         render: function () {
@@ -85,6 +96,10 @@ window.Engine = function() {
 
             // clear the screen
             gl.clear(gl.COLOR_BUFFER_BIT);
+
+            // is there a planet?
+            if (!this.planet)
+                return;
 
             // calculate projection matrices
             var mPerspective = mat4.create();

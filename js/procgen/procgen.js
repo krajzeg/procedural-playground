@@ -9,7 +9,7 @@ function rgb(r, g, b) {
     return 0xFF000000 | (b << 16) | (g << 8) | r;
 }
 
-window.ProcGen = function(textureWidth, textureHeight) {
+ProcGen = function(textureWidth, textureHeight) {
 
     return {
         simplexNoise: simplexNoise,

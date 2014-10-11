@@ -1,15 +1,14 @@
 
-!function() {
+var Earthlike = function() {
 
     // We will be using 1024 x 512 textures.
     var textureWidth = 1024, textureHeight = 512;
 
-    // Procgen is a helper object we will be using to generate them
+    // ProcGen is a helper object we will be using to generate those textures.
     var procgen = ProcGen(textureWidth, textureHeight);
 
-    // Register in the engine.
-    Engine.planetTypes.earthlike = generateEarthlikePlanet;
-
+    // Return the generation function.
+    return generateEarthlikePlanet;
 
     /**
      * This function here is the meat of the whole procedural generation.
@@ -30,5 +29,4 @@
             colorMap: colorMap
         }
     }
-
 }();
