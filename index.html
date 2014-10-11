@@ -4,7 +4,7 @@
 			body { background: black; }
 		</style>
 		<script src="bower_components/underscore/underscore.js"></script>
-		<script src="bower_components/gl-matrix/dist/gl-matrix.js"></script>
+		<script src="bower_components/gl-matrix/gl-matrix.js"></script>
 		<script src="wgl-utils.js"></script>
 		<script src="ball.js"></script>
 
@@ -23,11 +23,24 @@
         		gl.cullFace(gl.BACK);
 
 				var matPerspective = mat4.create();
-				mat4.perspective(matPerspective, 45, canvas.width / canvas.height, 0.1, 100.0);
+				mat4.perspective(45, 1, 0.1, 100.0, matPerspective);
+
+                // ============== textures
+
+                var glu = GLUtils(gl);
+
+                var data = new Uint32Array(512 * 512);
+                var endLoc = 512 * 512;
+                for (var loc = 0; loc < endLoc; loc++) {
+                    var x = loc & 0xff;
+                    var y = loc >> 9;
+                    var color = Math.floor(Math.random() * 255.0);
+                    data[loc] = 0xFF000000 | (0x010101 * color);
+                }
+                var colorTexture = new glu.Texture(512, 512, new Uint8Array(data.buffer));
 
 				// ============== shader setup
 
-				var glu = GLUtils(gl);
 				var shader = new glu.ShaderProgram(
 					document.getElementById('shader-vertex').innerHTML,
 					document.getElementById('shader-fragment').innerHTML
@@ -41,13 +54,13 @@
         		var posBuffer = new glu.Buffer(mesh.vertices, 3, gl.FLOAT);
         		var colorBuffer = new glu.Buffer(mesh.colors, 3, gl.FLOAT);
         		var normalBuffer = new glu.Buffer(mesh.normals, 3, gl.FLOAT);
+                var texCoordsBuffer = new glu.Buffer(mesh.textureCoords, 2, gl.FLOAT);
         		var indexBuffer = new glu.Buffer(mesh.indices, 1, gl.UNSIGNED_SHORT, gl.ELEMENT_ARRAY_BUFFER);
 
         		// =============== light
 
-        		var lightDir = vec3.create();
-        		vec3.normalize(lightDir, [0.5,-0.5,1]);
-        		console.log(lightDir);
+        		var lightDir = [0.5,-0.5,-1];
+        		vec3.normalize(lightDir);
 
         		// =============== draw!
 
@@ -57,11 +70,15 @@
         			aPosition: posBuffer,
         			aColor: colorBuffer, 
         			aNormal: normalBuffer,
+                    aTextureCoords: texCoordsBuffer,
 
         			uvLightDir: lightDir,
-        			ulAmbient: 0.08,
-        			ulDiffuse: 0.92,
+        			ulAmbient: 0.18,
+        			ulDiffuse: 0.82
         		});
+                shader.bindTextures({
+                    tColor: colorTexture
+                });
 
        			var yRotation = 0.0;
        			var matModel = mat4.create(), matModelRotation = mat4.create();
@@ -71,16 +88,18 @@
         				return requestAnimationFrame(drawFrame);
         			}
 
-        			yRotation += 0.02;
+        			yRotation += 0.005;
 
         			mat4.identity(matModel);
-        			mat4.translate(matModel, matModel, [0,0,-4]);
-        			mat4.rotateZ(matModel, matModel, -0.2);
-        			mat4.rotateY(matModel, matModel, yRotation);
+        			mat4.translate(matModel, [0,0,-2.8]);
+                    mat4.rotateX(matModel, 0.4);
+                    mat4.rotateZ(matModel, -0.2);
+                    mat4.rotateY(matModel, yRotation);
 
         			mat4.identity(matModelRotation);
-        			mat4.rotateZ(matModelRotation, matModelRotation, -0.2);
-        			mat4.rotateY(matModelRotation, matModelRotation, yRotation);
+                    mat4.rotateX(matModelRotation, 0.4);
+                    mat4.rotateZ(matModelRotation, -0.2);
+                    mat4.rotateY(matModelRotation, yRotation);
 
 					gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -91,7 +110,7 @@
     				glu.drawTriangles(indexBuffer);
 
     				requestAnimationFrame(drawFrame);
-        		};
+        		}
 
     			drawFrame();
 			};
@@ -105,13 +124,16 @@
 			attribute vec3 aPosition;
 			attribute vec3 aColor;
 			attribute vec3 aNormal;
+			attribute vec2 aTextureCoords;
 
 			varying vec3 vColor;
 			varying vec3 vNormal;
+			varying vec2 vTextureCoords;
 
 			void main(void) {
 				vColor = aColor;
 				vNormal = (mModelRotation * vec4(aNormal, 1.0)).xyz;
+                vTextureCoords = aTextureCoords;
 
         		gl_Position = mPerspective * mModel * vec4(aPosition, 1.0);
 			}
@@ -122,20 +144,25 @@
 			
 			varying vec3 vColor;
 			varying vec3 vNormal;
+            varying vec2 vTextureCoords;
+
+            uniform sampler2D tColor;
 
 			uniform vec3 uvLightDir;
 			uniform float ulAmbient;
 			uniform float ulDiffuse;
 
 			void main(void) {
+				vec4 color = texture2D(tColor, vTextureCoords);
 				float diffuseLight = max(0.0, dot(vNormal, -uvLightDir));
-				vec3 adjustedColor = vColor * (ulAmbient + ulDiffuse * diffuseLight);
-				gl_FragColor = vec4(adjustedColor, 1.0);
+				vec4 adjustedColor = color * (ulAmbient + ulDiffuse * diffuseLight);
+
+				gl_FragColor = adjustedColor;
 			}
 		</script>
 
 	</head>
 	<body>
-		<canvas id="cnv" width="640" height="640"></canvas>
+		<canvas id="cnv" width="512" height="512"></canvas>
 	</body>
 </html>

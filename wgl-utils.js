@@ -10,8 +10,14 @@ var GLUtils = function(glContext) {
 		'vec2': gl.uniform2fv,
 		'vec3': gl.uniform3fv,
 		'vec4': gl.uniform4fv,
-		'mat4': function(uniform, value) { gl.uniformMatrix4fv(uniform, false, value); }
-	}
+
+        'mat4': function(uniform, value) { gl.uniformMatrix4fv(uniform, false, value); },
+
+        'sampler2D': gl.uniform1i
+	};
+    var TextureUnits = _.map(_.range(0,32), function(number) {
+        return gl["TEXTURE" + number];
+    });
 
 	// ============ buffers
 
@@ -35,6 +41,28 @@ var GLUtils = function(glContext) {
         gl.bindBuffer(bufferType, glBuffer);
         gl.bufferData(bufferType, this.array, gl.STATIC_DRAW);
 	}
+
+    // ============ texture
+
+    function Texture(width, height, data) {
+        this.id = gl.createTexture();
+
+        gl.bindTexture(gl.TEXTURE_2D, this.id);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.generateMipmap(gl.TEXTURE_2D);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+    Texture.prototype = {
+    	bind: function(where) {
+    		gl.activeTexture(where);
+        	gl.bindTexture(gl.TEXTURE_2D, this.id);
+    	}
+    };
 
 	// ============ shader support
 
@@ -97,6 +125,16 @@ var GLUtils = function(glContext) {
 			});
 		},
 
+        bindTextures: function(textures) {
+            var self = this;
+            var index = 0;
+            _.map(textures, function(texture, uniformName) {
+                texture.bind(TextureUnits[index]);
+                self.setUniform(uniformName, index);
+                index++;
+            });
+        },
+
 		bindAttribute: function(name, buffer) {
 			var attribute = this.attributes[name];
 			gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
@@ -133,6 +171,7 @@ var GLUtils = function(glContext) {
 	return {
 		ShaderProgram: ShaderProgram,
 		Buffer: Buffer,
+        Texture: Texture,
 
 		drawTriangles: drawTriangles
 	}

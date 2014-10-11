@@ -1,5 +1,5 @@
 function createBallMesh(radius, slices, stacks) {
-	var vertices = [], colors = [], normals = [];
+	var vertices = [], colors = [], normals = [], textureCoords = [];
 
 	// create vertices
 	for (var slice = 0; slice <= slices; slice++) {
@@ -14,32 +14,35 @@ function createBallMesh(radius, slices, stacks) {
 
 			vertices.push(x, y, z);
 			colors.push(Math.abs(x), Math.abs(y), Math.abs(z));
+            textureCoords.push(stack / stacks, slice / slices);
 
-			var normal = vec3.create();
-			vec3.normalize(normal, [x,y,z]);
+			var normal = [x,y,z];
+			vec3.normalize(normal);
 			normals.push.apply(normals, normal);
+
 		}
 	}
 
 	// create index buffer
 	var indices = [];
 	var perSlice = stacks+1;
-	for (var slice = 0; slice < slices; slice++)
-		for (var stack = 0; stack < stacks; stack++) {
+	for (slice = 0; slice < slices; slice++)
+		for (stack = 0; stack < stacks; stack++) {
 			// calculate indices of the corners
 			var bl = slice * perSlice + stack;
-			var br = bl + 1
-			var tl = bl + perSlice
+			var br = bl + 1;
+			var tl = bl + perSlice;
 			var tr = tl + 1;
 
 			// two triangles per 'quad'
-			indices.push(bl, br, tl, tl, br, tr);
+			indices.push(tl, tr, bl, tr, br, bl);
 		}
 
 	return {
 		vertices: vertices,
 		colors: colors,
 		normals: normals,
+        textureCoords: textureCoords,
 		indices: indices
 	};
 }
