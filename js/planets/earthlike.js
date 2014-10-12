@@ -2,7 +2,7 @@
 var Earthlike = function() {
 
     // We will be using 1024 x 512 textures.
-    var textureWidth = 1024, textureHeight = 512;
+    var textureWidth = 2048, textureHeight = 1024;
 
     // ProcGen is a helper object we will be using to generate those textures.
     var procgen = ProcGen(textureWidth, textureHeight);
@@ -24,7 +24,7 @@ var Earthlike = function() {
             if (rawH < WaterThreshold)
                 return 0.98;
             else
-                return 1.0 + 0.1 *(rawH - WaterThreshold) / LandRange;
+                return 1.0 + 0.15 * Math.pow((rawH - WaterThreshold) / LandRange, 2.0);
         });
 
         var colorMap = procgen.derivedRGB([rawHeight], function(rawHeight) {
@@ -34,7 +34,7 @@ var Earthlike = function() {
                 return rgb(20 + rawHeight * 20, 20 + rawHeight * 20, 120 + rawHeight * 60);
         });
 
-        var BumpMapping90DegreeTilt = 0.03;
+        var BumpMapping90DegreeTilt = 0.02;
         var bumpMap = procgen.rgbFromXY(function(x, y) {
             var left = (x + textureWidth - 1) % textureWidth, right = (x + 1) % textureWidth;
             var up = (y + textureHeight - 1) % textureHeight, down = (y + 1) % textureHeight;
