@@ -16,14 +16,14 @@ var Earthlike = function() {
     function generateEarthlikePlanet() {
 
         var seed = Math.random() * 32767.0;
-        var rawHeight = procgen.simplexNoise(Math.random() * 32767, 7, 1.0);
+        var rawHeight = procgen.simplexNoise(Math.random() * 32767, 6, 1.0);
         var variationMap = procgen.simplexNoise(Math.random() * 32767, 3, 4.0);
 
         // ===========================================================
         // height map
 
-        var WaterThreshold = 0.2, LandRange = 1.0 - WaterThreshold;
-        var LandHeight = 0.25, MountainSteepness = 2.0;
+        var WaterThreshold = 0.1, LandRange = 1.0 - WaterThreshold;
+        var LandHeight = 0.2, MountainSteepness = 2.0;
         var heightMap = procgen.derivedFloat([rawHeight], function(rawH) {
             if (rawH < WaterThreshold)
                 return 0.98;
@@ -54,6 +54,11 @@ var Earthlike = function() {
         // ===========================================================
         // color map
 
+        /*var colorMap = procgen.derivedRGB([rawHeight], function(h) {
+            var v = 128 + 127 * h;
+            return rgb(v,v,v);
+        });*/
+
         /*var colorMap = procgen.derivedRGB([temperatureMap], function(temp) {
             var blueness = clamp(lerp(temp, 10.0, -30.0, 0, 255), 0, 255);
             var redness = clamp(lerp(temp, 10.0, 50.0, 0, 255), 0, 255);
@@ -76,7 +81,7 @@ var Earthlike = function() {
             var grassChance = clamp(1.0 - Math.abs(temperature - 17.0) / 20.0, 0.01, 1);
 
             var rockChance;
-            if (temperature < -3.0)
+            if (temperature < -7.0)
                 rockChance = 0;
             else
                 rockChance = clamp( (height - VegetationMaxHeight) / 0.01, 0, 1);

@@ -22,13 +22,22 @@ ProcGen = function(textureWidth, textureHeight) {
     };
 
     function simplexNoise(seed, octaveCount, roughness) {
-        var scale = roughness / textureWidth;
+        var octaveNoise = SimplexNoise.makeOctaveSphericalNoise(seed, octaveCount, roughness);
+        var buffer = Buffers.float(textureWidth, textureHeight);
 
-        var baseNoise = function(innerSeed) {
-            return SimplexNoise.makeXWrapped2dNoise(innerSeed, textureWidth * scale);
-        };
-        var octaveNoise = SimplexNoise.makeOctaveNoise(seed, baseNoise, octaveCount, scale);
-        return floatFromXY(octaveNoise);
+        var noiseX = 0.0, noiseY = 0.0, noiseStepX = 1 / textureWidth, noiseStepY = 1 / textureHeight;
+        var endLoc = textureWidth * textureHeight;
+        var targetArray = buffer.array;
+        for (var loc = 0; loc < endLoc;) {
+            targetArray[loc++] = octaveNoise(noiseX, noiseY);
+            if (loc % textureWidth) {
+                noiseX += noiseStepX;
+            } else {
+                noiseY += noiseStepY;
+                noiseX = 0.0;
+            }
+        }
+        return buffer;
     }
 
     function rgbFromXY(fn) {

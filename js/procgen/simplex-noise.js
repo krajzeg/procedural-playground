@@ -59,23 +59,26 @@ var SimplexNoise = function () {
     return {
         noise3D: noise3D,
 
-        makeXWrapped2dNoise: makeXWrapped2DNoise,
-        makeOctaveNoise: makeOctaveNoise
+        makeSpherical2DNoise: makeSpherical2DNoise,
+        makeOctaveSphericalNoise: makeOctaveSphericalNoise
     };
 
     // ========================================================================================
 
-    function makeOctaveNoise(seed, baseNoiseMaker, octaves, firstOctaveScale) {
-        var noises = _.range(0, octaves).map(function() {
+    function makeOctaveSphericalNoise(seed, octaves, startingScale) {
+        var scale = startingScale;
+        var noises = new Array(octaves);
+        for (var n = 0; n < octaves; n++) {
+            noises[n] = makeSpherical2DNoise(seed, scale);
             seed = (seed * 15227 + 11699) % 32987;
-            return baseNoiseMaker(seed);
-        });
+            scale *= 2;
+        }
+
         return function(x, y) {
-            var multiplier = 0.5, sum = 0.0, scale = firstOctaveScale;
+            var multiplier = 0.5, sum = 0.0;
             for (var i = 0; i < octaves; i++) {
-                sum += multiplier * noises[i](x * scale, y * scale);
+                sum += multiplier * noises[i](x, y);
                 multiplier *= 0.5;
-                scale *= 2;
             }
             return sum;
         }
@@ -83,17 +86,42 @@ var SimplexNoise = function () {
 
     // ========================================================================================
 
-    function makeXWrapped2DNoise(seed, tileWidth) {
-        var TwoPi = Math.PI * 2;
-        var angleMultiplier = TwoPi / tileWidth;
+    function makeSpherical2DNoise(seed, scale) {
+        var Pi = Math.PI, TwoPi = Math.PI * 2;
+
         return function(x, y) {
-            var angle = x * angleMultiplier;
-            var mappedX = Math.sin(angle) * tileWidth;
-            var mappedZ = Math.cos(angle) * tileWidth + seed;
-            var mappedY = y * TwoPi;
-            return noise3D(mappedX, mappedY, mappedZ);
+            var xAngle = x * TwoPi;
+            var yAngle = y * Pi;
+            var radius = scale * Math.sin(yAngle);
+
+            return noise3D(
+                Math.sin(xAngle) * radius,
+                y * 2 * scale,
+                Math.cos(xAngle) * radius + seed
+            );
         }
     }
+
+    /*function makeSpherical2DNoise(seed, sphereWidth, sphereHeight) {
+        var Pi = Math.PI;
+        var angleMultiplier = Math.PI * 2 / sphereWidth;
+
+        var radiusAtY = {};
+
+        return function(x, y) {
+            var xAngle = x * angleMultiplier;
+            var radius = radiusAtY[y];
+            if (!radius) {
+                var yAngle = (y / sphereHeight) * Pi;
+                radius = sphereWidth; // * Math.sin(yAngle);
+                radiusAtY[y] = radius;
+            }
+            var mappedX = Math.sin(xAngle) * radius;
+            var mappedZ = Math.cos(xAngle) * radius + seed;
+            var mappedY = y;
+            return noise3D(mappedX, mappedY, mappedZ);
+        }
+    }*/
 
     // ========================================================================================
 
