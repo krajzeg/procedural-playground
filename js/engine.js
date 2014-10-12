@@ -50,7 +50,7 @@ window.Engine = function() {
 
         setupBall: function () {
             var gl = this.gl, glu = this.glu;
-            var mesh = createBallMesh(1, 50, 50);
+            var mesh = createBallMesh(1, 150, 150);
             this.buffers = {
                 position: new glu.Buffer(mesh.vertices, 3, gl.FLOAT),
                 color: new glu.Buffer(mesh.colors, 3, gl.FLOAT),

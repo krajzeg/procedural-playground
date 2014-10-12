@@ -29,7 +29,7 @@ var Earthlike = function() {
 
         var colorMap = procgen.derivedRGB([rawHeight], function(rawHeight) {
             if (rawHeight > 0.105)
-                return rgb(160 + rawHeight * 40, 100 + rawHeight * 60, rawHeight * 80);
+                return rgb(150 + rawHeight * 40, 90 + rawHeight * 60, 30 + rawHeight * 40);
             else
                 return rgb(40, 40, 130 + rawHeight * 40);
         });
