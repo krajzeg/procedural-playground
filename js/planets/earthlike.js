@@ -16,16 +16,26 @@ var Earthlike = function() {
     function generateEarthlikePlanet() {
 
         var seed = Math.random() * 32767.0;
-        var noise = procgen.simplexNoise(seed, 7, 1.0);
+        var rawHeight = procgen.simplexNoise(seed, 7, 1.0);
 
-        var colorMap = procgen.derivedRGB([noise], function(noise) {
-            if (noise > 0.105)
-                return rgb(160 + noise * 40, 100 + noise * 60, noise * 80);
+        var WaterThreshold = 0.1, LandRange = 1.0 - WaterThreshold;
+
+        var heightMap = procgen.derivedFloat([rawHeight], function(rawH) {
+            if (rawH < WaterThreshold)
+                return 0.98;
             else
-                return rgb(40, 40, 130 + noise * 40);
+                return 1.0 + 0.1 * (rawH - WaterThreshold) / LandRange;
+        });
+
+        var colorMap = procgen.derivedRGB([rawHeight], function(rawHeight) {
+            if (rawHeight > 0.105)
+                return rgb(160 + rawHeight * 40, 100 + rawHeight * 60, rawHeight * 80);
+            else
+                return rgb(40, 40, 130 + rawHeight * 40);
         });
 
         return {
+            heightMap: heightMap,
             colorMap: colorMap
         }
     }

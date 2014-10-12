@@ -81,6 +81,8 @@
 			attribute vec3 aNormal;
 			attribute vec2 aTextureCoords;
 
+            uniform sampler2D tHeight;
+
 			varying vec3 vColor;
 			varying vec3 vNormal;
 			varying vec2 vTextureCoords;
@@ -90,7 +92,8 @@
 				vNormal = (mModelRotation * vec4(aNormal, 1.0)).xyz;
                 vTextureCoords = aTextureCoords;
 
-        		gl_Position = mPerspective * mModel * vec4(aPosition, 1.0);
+                vec3 positionWithHeight = texture2D(tHeight, aTextureCoords).r * aPosition;
+        		gl_Position = mPerspective * mModel * vec4(positionWithHeight, 1.0);
 			}
 		</script>
 

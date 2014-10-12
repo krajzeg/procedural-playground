@@ -15,7 +15,9 @@ ProcGen = function(textureWidth, textureHeight) {
         simplexNoise: simplexNoise,
 
         floatFromXY: floatFromXY,
-        derivedRGB: derivedRGB
+
+        derivedRGB: derivedRGB,
+        derivedFloat: derivedFloat
     };
 
     function simplexNoise(seed, octaveCount, roughness) {
@@ -45,21 +47,30 @@ ProcGen = function(textureWidth, textureHeight) {
     }
 
     function derivedRGB(sources, fn) {
+        return derivedBuffer(sources, Buffers.rgb(textureWidth, textureHeight), fn);
+    }
+
+    function derivedFloat(sources, fn) {
+        return derivedBuffer(sources, Buffers.float(textureWidth, textureHeight), fn)
+    }
+
+    function derivedBuffer(sources, target, fn) {
         var args = new Array(sources.length), sourceCount = sources.length;
         var arrays = sources.map(function(source) {
             return source.array;
         });
 
-        var output = Buffers.rgb(textureWidth, textureHeight);
-        var outputArray = output.array;
+        var targetArray = target.array;
 
         var endLoc = textureWidth * textureHeight;
         for (var loc = 0; loc != endLoc; loc++) {
             for (var i = 0; i < sourceCount; i++)
                 args[i] = arrays[i][loc];
-            outputArray[loc] = fn.apply(null, args);
+            targetArray[loc] = fn.apply(null, args);
         }
 
-        return output;
+        return target;
     }
+
+
 };

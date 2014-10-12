@@ -32,7 +32,7 @@ var GLUtils = function(glContext) {
 		this.id = glBuffer;
 
         switch(glItemType) {
-        	case gl.FLOAT: 
+        	case gl.FLOAT:
         		this.array = new Float32Array(array); break;
         	case gl.UNSIGNED_SHORT:
         		this.array = new Uint16Array(array); break;
@@ -44,20 +44,23 @@ var GLUtils = function(glContext) {
 
     // ============ texture
 
-    function Texture(width, height, data) {
+    function Texture(width, height, data, format) {
+        format = format || Texture.RGBA;
+
         this.id = gl.createTexture();
 
         gl.bindTexture(gl.TEXTURE_2D, this.id);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, format.fromFormat, width, height, 0, format.toFormat, format.type, data);
         if (width == height) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
             gl.generateMipmap(gl.TEXTURE_2D);
         } else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            var filtering = (format == Texture.FLOAT_LUMINANCE) ? gl.NEAREST : gl.LINEAR;
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filtering);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filtering);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         }
@@ -70,21 +73,19 @@ var GLUtils = function(glContext) {
         	gl.bindTexture(gl.TEXTURE_2D, this.id);
     	}
     };
-    Texture.fromRGBBuffer = function(buffer) {
-        var byteArray = new Uint8Array(buffer.array.buffer);
-        return new Texture(buffer.width, buffer.height, byteArray);
-    };
-    /*Texture.fromFloatBuffer = function(buffer) {
-        // convert to 8-bit unsigned so we don't have to care about OES_texture_float support
-        // we assume -1.0 - 1.0 range in the original floats
-        var sourceArray = buffer.array;
-        var destArray = new Uint8Array(sourceArray.length);
-        var endLoc = sourceArray.length;
-        for (var loc = 0; loc != endLoc; loc++)
-            destArray = Math.round(127.5 + destArray[loc] * 127.5);
-        // make texture
-        return new Texture(buffer.width, buffer.height, byteArray, Texture.SINGLE_CHANNEL)
-    };*/
+    _.extend(Texture, {
+        RGBA:  {fromFormat: gl.RGBA, toFormat: gl.RGBA, type: gl.UNSIGNED_BYTE},
+        FLOAT_LUMINANCE: {fromFormat: gl.LUMINANCE, toFormat: gl.LUMINANCE, type: gl.FLOAT},
+
+        fromRGBBuffer: function(buffer) {
+            var byteArray = new Uint8Array(buffer.array.buffer);
+            return new Texture(buffer.width, buffer.height, byteArray);
+        },
+
+        fromFloatBuffer: function(buffer) {
+            return new Texture(buffer.width, buffer.height, buffer.array, Texture.FLOAT_LUMINANCE);
+        }
+    });
 
     // ============ shader support
 

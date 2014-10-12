@@ -20,15 +20,23 @@ window.Engine = function() {
             if (!gl)
                 throw "Unable to create a WebGL context, please use fresh Chrome or Firefox versions.";
 
+            // try the OES_texture_float extension
+            var extensions = ['OES_texture_float'];
+            extensions.map(function(name) {
+                var ext = gl.getExtension(name);
+                if (!ext)
+                    throw "GL extension '" + name + "' unsupported - please use fresh Chrome or Firefox version.";
+            });
+
             // GL settings that will not change ever are set up below
             gl.clearColor(0, 0, 0, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.CULL_FACE);
             gl.cullFace(gl.BACK);
 
-            this.gl = gl;
+            window.gl = this.gl = gl;
             this.glu = GLUtils(gl);
         },
 
@@ -93,7 +101,8 @@ window.Engine = function() {
 
             _.extend(planet, {
                 textures: {
-                    color: glu.Texture.fromRGBBuffer(planet.colorMap)
+                    color: glu.Texture.fromRGBBuffer(planet.colorMap),
+                    height: glu.Texture.fromFloatBuffer(planet.heightMap)
                 }
             });
 
@@ -165,7 +174,8 @@ window.Engine = function() {
                 ulDiffuse: 0.82
             });
             shader.bindTextures({
-                tColor: this.planet.textures.color
+                tColor: this.planet.textures.color,
+                tHeight: this.planet.textures.height
             });
 
             // draw the planet!
