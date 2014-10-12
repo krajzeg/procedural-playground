@@ -14,6 +14,7 @@ ProcGen = function(textureWidth, textureHeight) {
     return {
         simplexNoise: simplexNoise,
 
+        rgbFromXY: rgbFromXY,
         floatFromXY: floatFromXY,
 
         derivedRGB: derivedRGB,
@@ -30,20 +31,12 @@ ProcGen = function(textureWidth, textureHeight) {
         return floatFromXY(octaveNoise);
     }
 
-    function floatFromXY(fn) {
-        var output = Buffers.float(textureWidth, textureHeight);
-        var outputArray = output.array;
-        var x = 0, y = 0, wrapX = textureWidth;
-        var endLoc = textureWidth * textureHeight;
-        for (var loc = 0; loc != endLoc; loc++) {
-            outputArray[loc] = fn(x, y);
-            if (++x == wrapX) {
-                y++;
-                x = 0;
-            }
-        }
+    function rgbFromXY(fn) {
+        return xyBuffer(Buffers.rgb(textureWidth, textureHeight), fn);
+    }
 
-        return output;
+    function floatFromXY(fn) {
+        return xyBuffer(Buffers.float(textureWidth, textureHeight), fn);
     }
 
     function derivedRGB(sources, fn) {
@@ -52,6 +45,21 @@ ProcGen = function(textureWidth, textureHeight) {
 
     function derivedFloat(sources, fn) {
         return derivedBuffer(sources, Buffers.float(textureWidth, textureHeight), fn)
+    }
+
+    function xyBuffer(target, fn) {
+        var targetArray = target.array;
+        var x = 0, y = 0, wrapX = textureWidth;
+        var endLoc = textureWidth * textureHeight;
+        for (var loc = 0; loc != endLoc; loc++) {
+            targetArray[loc] = fn(x, y);
+            if (++x == wrapX) {
+                y++;
+                x = 0;
+            }
+        }
+
+        return target;
     }
 
     function derivedBuffer(sources, target, fn) {

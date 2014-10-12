@@ -5,6 +5,8 @@
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/gl-matrix/gl-matrix.js"></script>
 
+        <script src="js/numeric-utils.js"></script>
+
         <script src="js/procgen/texture-buffers.js"></script>
         <script src="js/procgen/procgen.js"></script>
 
@@ -105,6 +107,7 @@
             varying vec2 vTextureCoords;
 
             uniform sampler2D tColor;
+            uniform sampler2D tBump;
 
 			uniform vec3 uvLightDir;
 			uniform float ulAmbient;
@@ -112,7 +115,23 @@
 
 			void main(void) {
 				vec4 color = texture2D(tColor, vTextureCoords);
-				float diffuseLight = max(0.0, dot(vNormal, -uvLightDir));
+
+				vec2 bumpSample = texture2D(tBump, vTextureCoords).rg;
+				vec2 bump = vec2((bumpSample.r - 0.5) * (-3.1415), (bumpSample.g - 0.5) * 3.1415);
+
+                mat3 normalRotAboutX = mat3(
+                    1.0, 0.0, 0.0,
+                    0.0, cos(bump.y), sin(bump.y),
+                    0.0, -sin(bump.y), cos(bump.y)
+                );
+                mat3 normalRotAboutY = mat3(
+                    cos(bump.x), 0, -sin(bump.x),
+                    0.0, 1.0, 0.0,
+                    sin(bump.x), 0, cos(bump.x)
+                );
+				vec3 adjustedNormal = normalRotAboutX * normalRotAboutY * vNormal;
+
+				float diffuseLight = max(0.0, dot(adjustedNormal, -uvLightDir));
 				vec4 adjustedColor = color * (ulAmbient + ulDiffuse * diffuseLight);
 
 				gl_FragColor = adjustedColor;
