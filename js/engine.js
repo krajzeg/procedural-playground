@@ -99,6 +99,13 @@ window.Engine = function() {
         useNewPlanet: function (planet) {
             var glu = this.glu;
 
+            // free up old textures
+            if (this.planet && this.planet.textures)
+                _.map(this.planet.textures, function(texture) {
+                    texture.destroy();
+                });
+
+            // set up new textures
             _.extend(planet, {
                 textures: {
                     color: glu.Texture.fromRGBBuffer(planet.colorMap),

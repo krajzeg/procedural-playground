@@ -71,7 +71,10 @@ var GLUtils = function(glContext) {
     	bind: function(where) {
     		gl.activeTexture(where);
         	gl.bindTexture(gl.TEXTURE_2D, this.id);
-    	}
+    	},
+        destroy: function() {
+            gl.deleteTexture(this.id);
+        }
     };
     _.extend(Texture, {
         RGBA:  {fromFormat: gl.RGBA, toFormat: gl.RGBA, type: gl.UNSIGNED_BYTE},
