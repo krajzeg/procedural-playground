@@ -5,8 +5,6 @@ window.Engine = function() {
         this.setupBall();
         this.setupLight();
         this.setupState();
-
-        this.generatePlanet('earthlike');
     }
 
     Engine.prototype = {
@@ -62,7 +60,12 @@ window.Engine = function() {
         },
 
         setupState: function () {
+            this.stopped = false;
             this.rotation = 0.0;
+        },
+
+        start: function() {
+            this.generatePlanet();
         },
 
         generatePlanet: function() {
@@ -75,12 +78,14 @@ window.Engine = function() {
             self.worker.addEventListener('message', function(evt) {
                 var msg = evt.data;
                 if (msg.type == 'done') {
-                    self.useNewPlanet(msg.planet);
                     self.worker.terminate();
                     self.worker = null;
+                    self.useNewPlanet(msg.planet);
                 }
             });
             self.worker.postMessage({start: "now!"});
+
+            document.dispatchEvent(new Event('updateState'));
         },
 
         useNewPlanet: function (planet) {
@@ -93,14 +98,26 @@ window.Engine = function() {
             });
 
             this.planet = planet;
+            document.dispatchEvent(new Event('updateState'));
+        },
+
+        toggleStopped: function() {
+            this.stopped = !this.stopped;
+            document.dispatchEvent(new Event('updateState'));
         },
 
         tick: function () {
+            if (this.stopped)
+                return;
             this.rotation -= 0.002;
         },
 
         render: function () {
             var gl = this.gl, glu = this.glu;
+
+            // stopped?
+            if (this.stopped)
+                return;
 
             // clear the screen
             gl.clear(gl.COLOR_BUFFER_BIT);

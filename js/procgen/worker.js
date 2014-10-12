@@ -9,9 +9,6 @@ importScripts(
 
 self.addEventListener('message', function(msg) {
     var planet = Earthlike();
-
-    console.log(planet.colorMap.array);
-
     self.postMessage(
         {type: 'done', planet: planet}
     );

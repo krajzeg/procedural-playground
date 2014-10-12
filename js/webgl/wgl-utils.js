@@ -74,6 +74,17 @@ var GLUtils = function(glContext) {
         var byteArray = new Uint8Array(buffer.array.buffer);
         return new Texture(buffer.width, buffer.height, byteArray);
     };
+    /*Texture.fromFloatBuffer = function(buffer) {
+        // convert to 8-bit unsigned so we don't have to care about OES_texture_float support
+        // we assume -1.0 - 1.0 range in the original floats
+        var sourceArray = buffer.array;
+        var destArray = new Uint8Array(sourceArray.length);
+        var endLoc = sourceArray.length;
+        for (var loc = 0; loc != endLoc; loc++)
+            destArray = Math.round(127.5 + destArray[loc] * 127.5);
+        // make texture
+        return new Texture(buffer.width, buffer.height, byteArray, Texture.SINGLE_CHANNEL)
+    };*/
 
     // ============ shader support
 

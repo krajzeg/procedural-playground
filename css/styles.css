@@ -1,6 +1,7 @@
 body {
     background: black;
     font: 16px sans-serif;
+    color: #aaa;
 }
 
 #main {
@@ -25,4 +26,23 @@ body {
     text-shadow: 0 1px #000;
 
     margin: 0 5px;
+    transition: 0.5s all;
+}
+
+.control-panel a:hover, a.ongoing {
+    background: #444444;
+}
+
+.texture-list {
+    position: fixed;
+    top: 5px; right: 5px;
+    width: 100px;
+    background: #222;
+    padding: 10px;
+    font-size: 80%;
+}
+
+.texture-list a {
+    color: #fff;
+    display: block;
 }

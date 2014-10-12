@@ -17,14 +17,49 @@
 
         <script>
 			window.onload = function() {
+                var $ = document.querySelector.bind(document);
+
                 // initialize our rendering engine
                 var engine = new Engine();
 
                 // bind UI events
-                document.getElementById('btn-regenerate').addEventListener('click', function() {
+                $('#btn-regenerate').addEventListener('click', function() {
                     engine.generatePlanet('earthlike');
                     return false;
                 });
+
+                $('#btn-stop').addEventListener('click', function() {
+                    engine.toggleStopped();
+                    return false;
+                });
+
+                document.addEventListener('updateState', function(evt) {
+                    $('#btn-stop').classList[engine.stopped ? 'add' : 'remove']('ongoing');
+                    var regenButton = $('#btn-regenerate');
+                    if (engine.worker) {
+                        regenButton.innerHTML = 'Generating...';
+                        regenButton.classList.add('ongoing');
+                    } else {
+                        document.getElementById('btn-regenerate').innerHTML = 'Regenerate!';
+                        regenButton.classList.remove('ongoing');
+                    }
+
+                    var textureList = $('#textures');
+                    textureList.innerHTML = '';
+                    if (engine.planet) {
+                        _.map(engine.planet, function(value, key) {
+                            if (key.indexOf("Map") >= 0) {
+                                var link = document.createElement('a');
+                                link.href = '#';
+                                link.innerHTML = key;
+                                textureList.appendChild(link);
+                            }
+                        });
+                    }
+                });
+
+                // start!
+                engine.start();
 
                 // kickstart rendering
                 requestAnimationFrame(processFrame);
@@ -88,6 +123,12 @@
 		    <canvas id="main-canvas" width="512" height="512"></canvas>
             <div class="control-panel">
                 <a href="#" id="btn-regenerate">Regenerate!</a>
+                <a href="#" id="btn-stop">Stop rotation</a>
+            </div>
+        </div>
+        <div class="texture-list">
+            <b>Textures:</b>
+            <div id="textures">
             </div>
         </div>
 	</body>
