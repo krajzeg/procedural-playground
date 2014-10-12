@@ -59,24 +59,41 @@ var Earthlike = function() {
             var redness = clamp(lerp(temp, 10.0, 50.0, 0, 255), 0, 255);
             return rgb(redness, 64, blueness);
         });*/
-        var VegetationMaxHeight = 1.0 + LandHeight * 0.05;
+        var VegetationMaxHeight = 1.0 + LandHeight * 0.04;
         var colorMap = procgen.derivedRGB([rawHeight, heightMap, temperatureMap], function(rawHeight, height, temperature) {
             // water
             if (height < 1.0)
                 return rgb(20 + rawHeight * 20, 20 + rawHeight * 20, 120 + rawHeight * 60);
 
             // land, pick base ground type
+            var snowChance = clamp(lerp(temperature, -2, -7, 0, 1), 0, 1);
+            var sandChance;
+            if (temperature < 10.0)
+                sandChance = 0.0;
+            else
+                sandChance = clamp(lerp(height, 1.0, 1.0 + temperature * 0.0001, 1.0, 0.0), 0, 1);
 
-            if (temperature <= -7.0) return rgb(255, 255, 255);
-            if (height < 1.0 + 0.00002 * temperature) return rgb(220, 200, 120);
-            if (height > VegetationMaxHeight) return rgb(150, 160, 170);
-            return rgb(60, 160, 60);
+            var grassChance = clamp(1.0 - Math.abs(temperature - 17.0) / 20.0, 0.01, 1);
+
+            var rockChance;
+            if (temperature < -3.0)
+                rockChance = 0;
+            else
+                rockChance = clamp( (height - VegetationMaxHeight) / 0.01, 0, 1);
+
+            var terrain = fuzzyPick([snowChance, sandChance, grassChance, rockChance]);
+            switch(terrain) {
+                case 0: return rgb(255, 255, 255);
+                case 1: return rgb(220, 200, 120);
+                case 2: return rgb(60, 160, 60);
+                case 3: return rgb(150, 160, 170);
+            }
         });
 
         // ===========================================================
         // bump map
 
-        var BumpMapping90DegreeTilt = 0.04;
+        var BumpMapping90DegreeTilt = 0.02;
         var bumpMap = procgen.rgbFromXY(function(x, y) {
             var left = (x + textureWidth - 1) % textureWidth, right = (x + 1) % textureWidth;
             var up = (y + textureHeight - 1) % textureHeight, down = (y + 1) % textureHeight;
