@@ -13,9 +13,14 @@ window.Engine = function() {
         setupGL: function () {
             // try to create a WebGL context
             var canvas = document.getElementById('main-canvas');
-            var gl = canvas.getContext('webgl');
+
+            var contextNames = ['webgl', 'experimental-webgl'];
+            var gl;
+            contextNames.map(function(name) {
+            	if (!gl) gl = canvas.getContext(name);
+            });
             if (!gl)
-                throw "Unable to create a WebGL context, use fresh Chrome or Firefox versions.";
+                throw "Unable to create a WebGL context, please use fresh Chrome or Firefox versions.";
 
             // GL settings that will not change ever are set up below
             gl.clearColor(0, 0, 0, 1);
@@ -60,19 +65,22 @@ window.Engine = function() {
             this.rotation = 0.0;
         },
 
-        generatePlanet: function(type) {
+        generatePlanet: function() {
             var self = this;
-            var planetWorker = new Worker('js/procgen/worker.js');
-            planetWorker.addEventListener('message', function(evt) {
+
+            if (self.worker)
+                return;
+
+            self.worker = new Worker('js/procgen/worker.js');
+            self.worker.addEventListener('message', function(evt) {
                 var msg = evt.data;
-                if (msg.type == 'log')
-                    console.log("WORKER: " + msg.msg);
-                else {
-                    console.log(msg.planet);
+                if (msg.type == 'done') {
                     self.useNewPlanet(msg.planet);
+                    self.worker.terminate();
+                    self.worker = null;
                 }
             });
-            planetWorker.postMessage({start: "now!"});
+            self.worker.postMessage({start: "now!"});
         },
 
         useNewPlanet: function (planet) {
