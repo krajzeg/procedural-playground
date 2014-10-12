@@ -153,12 +153,9 @@ window.Engine = function() {
 
             mat4.translate(mModel, [0, 0, -2.8]);
 
-            mat4.rotateX(mModel, 0.4);
-            mat4.rotateX(mRotation, 0.4);
-            mat4.rotateZ(mModel, -0.2);
-            mat4.rotateZ(mRotation, -0.2);
-            mat4.rotateY(mModel, this.rotation);
-            mat4.rotateY(mRotation, this.rotation);
+            mat4.rotateX(mModel, 0.4); mat4.rotateX(mRotation, 0.4);
+            mat4.rotateZ(mModel, -0.2); mat4.rotateZ(mRotation, -0.2);
+            mat4.rotateY(mModel, this.rotation); mat4.rotateY(mRotation, this.rotation);
 
             // select planet shader
             var shader = this.shader;
