@@ -7,6 +7,7 @@ body {
 #main {
     width: 512px;
     margin: 50px auto;
+    text-align: center;
 }
 
 .control-panel {

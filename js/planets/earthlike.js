@@ -31,10 +31,10 @@ var Earthlike = function() {
             if (rawHeight > WaterThreshold)
                 return rgb(150, 90, 30);
             else
-                return rgb(40, 40, 130 + rawHeight * 40);
+                return rgb(20 + rawHeight * 20, 20 + rawHeight * 20, 120 + rawHeight * 60);
         });
 
-        var BumpMapping90DegreeTilt = 0.05;
+        var BumpMapping90DegreeTilt = 0.03;
         var bumpMap = procgen.rgbFromXY(function(x, y) {
             var left = (x + textureWidth - 1) % textureWidth, right = (x + 1) % textureWidth;
             var up = (y + textureHeight - 1) % textureHeight, down = (y + 1) % textureHeight;
