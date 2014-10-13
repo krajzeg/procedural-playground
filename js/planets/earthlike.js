@@ -53,7 +53,8 @@ var Earthlike = function() {
         // ===========================================================
         // temperature map
 
-        var EquatorTemperature = 40.0, PoleTemperature = -20.0,
+        var PlanetClimate = 25.0;
+        var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate,
             ColdnessWithAltitude = 90.0 / LandHeight,
             TemperatureLocalVariation = 10.0;
         var equatorY = textureHeight / 2;
@@ -80,11 +81,24 @@ var Earthlike = function() {
 
             // fuzzy pick actual terrain
             var snowChance = clamp(lerp(temperature, 1.0, -2.0, 0.0, 1.0), 0.0, 1.0);
-            var sandChance = clamp(Math.pow((temperature - 20.0) / 20.0, 3.0), 0.0, 1.0);
-            var rockChance = clamp(clamp((height - RockHeight) / 0.01, 0.0, 1.0) - snowChance, 0.0, 1.0);
+            var sandChance = clamp(Math.pow((temperature - 25.0) / 10.0, 3.0), 0.0, 1.0);
+            var rockChance = clamp(clamp((height - RockHeight) / 0.01, 0.0, 1.0) - snowChance - sandChance, 0.0, 1.0);
             var grassChance = clamp(1 - rockChance - sandChance - snowChance, 0.0, 1.0);
 
             return fuzzyPick([grassChance, sandChance, rockChance, snowChance])
+        });
+
+        // ===========================================================
+        // lighting map
+        var LightingCoefficients = [
+            rgb(16, 240, 10), // grass
+            rgb(16, 240, 0),  // sand
+            rgb(16, 240, 64), // rock
+            rgb(32, 224, 196), // snow
+            rgb(16, 240, 128), // water
+        ];
+        var lightMap = procgen.makeRGBMap([terrainMap], function(terrain) {
+            return LightingCoefficients[terrain];
         });
 
         // ===========================================================
@@ -120,7 +134,8 @@ var Earthlike = function() {
         return {
             heightMap: heightMap,
             colorMap: colorMap,
-            bumpMap: bumpMap
+            bumpMap: bumpMap,
+            lightMap: lightMap
         }
     }
 }();

@@ -43,3 +43,13 @@ function fuzzyPick(weights) {
 
     return index;
 }
+
+/**
+ * Returns a random float in the given range.
+ * @param from the lowest number possible
+ * @param to the highest number possible
+ * @returns {number} uniform random number in the range
+ */
+function randomInRange(from, to) {
+    return Math.random() * (to - from) + from;
+}

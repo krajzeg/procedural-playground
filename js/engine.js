@@ -110,7 +110,8 @@ window.Engine = function() {
                 textures: {
                     color: glu.Texture.fromRGBBuffer(planet.colorMap),
                     height: glu.Texture.fromFloatBuffer(planet.heightMap),
-                    bump: glu.Texture.fromRGBBuffer(planet.bumpMap)
+                    bump: glu.Texture.fromRGBBuffer(planet.bumpMap),
+                    lightParams: glu.Texture.fromRGBBuffer(planet.lightMap)
                 }
             });
 
@@ -174,14 +175,13 @@ window.Engine = function() {
                 aTextureCoords: this.buffers.textureCoords,
 
                 // lighting configuration
-                uvLightDir: this.lightVector,
-                ulAmbient: 0.18,
-                ulDiffuse: 0.82
+                uvLightDir: this.lightVector
             });
             shader.bindTextures({
                 tColor: this.planet.textures.color,
                 tHeight: this.planet.textures.height,
-                tBump: this.planet.textures.bump
+                tBump: this.planet.textures.bump,
+                tLightParams: this.planet.textures.lightParams
             });
 
             // draw the planet!

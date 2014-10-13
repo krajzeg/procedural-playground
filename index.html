@@ -115,10 +115,9 @@
 
             uniform sampler2D tColor;
             uniform sampler2D tBump;
+            uniform sampler2D tLightParams;
 
 			uniform vec3 uvLightDir;
-			uniform float ulAmbient;
-			uniform float ulDiffuse;
 
 			void main(void) {
 			    // color map
@@ -140,16 +139,22 @@
                 );
 				vec3 adjustedNormal = normalRotAboutX * normalRotAboutY * vNormal;
 
+                // lightning params
+                vec3 lightParams = texture2D(tLightParams, vTextureCoords).rgb;
+                float ambientPower = lightParams.r;
+                float diffusePower = lightParams.g;
+                float specularPower = lightParams.b;
+
                 // diffuse lighting
 				float diffuseLight = max(0.0, dot(adjustedNormal, -uvLightDir));
 
 				// final color
-				vec4 adjustedColor = color * (ulAmbient + ulDiffuse * diffuseLight);
+				vec4 adjustedColor = color * (ambientPower + diffusePower * diffuseLight);
 
 				// specular lighting
 				vec3 viewerVector = normalize(-vPosition);
 				vec3 halfwayVector = normalize(viewerVector - uvLightDir);
-			    float specularLight = pow(dot(halfwayVector, adjustedNormal), 15.0) * 0.5;
+			    float specularLight = pow(dot(halfwayVector, adjustedNormal), 15.0) * specularPower;
                 adjustedColor += vec4(specularLight, specularLight, specularLight, 0);
 
 				gl_FragColor = vec4(adjustedColor.rgb, 1.0);

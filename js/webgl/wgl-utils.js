@@ -155,6 +155,8 @@ var GLUtils = function(glContext) {
             var self = this;
             var index = 0;
             _.map(textures, function(texture, uniformName) {
+                if (!self.uniforms[uniformName])
+                    throw "There is no sampler called '" + uniformName + "' to bind a texture to.";
                 texture.bind(TextureUnits[index]);
                 self.setUniform(uniformName, index);
                 index++;
@@ -169,6 +171,8 @@ var GLUtils = function(glContext) {
 
 		setUniform: function(name, value) {
 			var uniform = this.uniforms[name];
+            if (!uniform)
+                throw "I don't know the uniform '" + name + "'.";
 			var setter = UniformSetters[uniform.type];
 			if (!setter)
 				throw "I don't know how to set uniforms of type " + uniform.type + ".";
