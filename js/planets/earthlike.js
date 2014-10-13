@@ -95,7 +95,7 @@ var Earthlike = function() {
             rgb(16, 240, 0),  // sand
             rgb(16, 240, 64), // rock
             rgb(32, 224, 196), // snow
-            rgb(16, 240, 128), // water
+            rgb(16, 240, 80), // water
         ];
         var lightMap = procgen.makeRGBMap([terrainMap], function(terrain) {
             return LightingCoefficients[terrain];
@@ -115,7 +115,7 @@ var Earthlike = function() {
             return rgb(redness, 64, blueness);
         });*/
 
-        var RockColor1 = [140, 120, 100], RockColor2 = [210, 180, 160];
+        var RockColor1 = [160, 140, 110], RockColor2 = [210, 180, 160];
         var PaleGrass = {r: 130, g: 170, b: 130}, LushGrass = {r: 20, g: 100, b: 20};
         var colorMap = procgen.makeRGBMap([terrainMap, rawHeight], function(terrain, rawHeight, x, y) {
             // water
@@ -135,8 +135,9 @@ var Earthlike = function() {
             var variation = variationMap.get(x,y);
             var height = heightMap.get(x,y);
             //var alpha = Math.abs((variation + 1.0) % 0.2 - 0.1) / 0.2 + (height - 1.0) * 8;
-            var alpha = (height - RockHeight) * 50;
-            alpha = clamp(alpha, 0.0, 1.0);
+            var bandComponent = Math.abs((variation + 1.0) % 0.4 - 0.2) / 0.2;
+            var randomComponent = randomInRange(-0.5, 0.5);
+            alpha = clamp(bandComponent + randomComponent, 0.0, 1.0);
 
             var r = lerp(alpha, 0, 1, RockColor1[0], RockColor2[0]);
             var g = lerp(alpha, 0, 1, RockColor1[1], RockColor2[1]);
@@ -148,7 +149,7 @@ var Earthlike = function() {
         function grass(x, y) {
             var temperature = temperatureMap.get(x, y);
             var variation = variationMap.get(x, y);
-            var alpha = clamp(lerp(temperature + variation * 10.0, 8.0, 30.0, 0.0, 1.0), 0.0, 1.0);
+            var alpha = clamp(lerp(temperature + variation * 10.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
 
             var r = lerp(alpha, 0, 1, PaleGrass.r, LushGrass.r) + randomInRange(-5.0, 5.0) * alpha;
             var g = lerp(alpha, 0, 1, PaleGrass.g, LushGrass.g) + randomInRange(-10.0, 10.0) * alpha;
