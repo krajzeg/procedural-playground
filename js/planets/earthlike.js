@@ -105,11 +105,11 @@ var Earthlike = function() {
         // ===========================================================
         // lighting map
         var LightingCoefficients = [
-            rgb(16, 240, 10), // grass
-            rgb(16, 240, 0),  // sand
-            rgb(16, 240, 64), // rock
+            rgb(32, 224, 10), // grass
+            rgb(32, 224, 0),  // sand
+            rgb(32, 224, 64), // rock
             rgb(32, 224, 196), // snow
-            rgb(16, 240, 80), // water
+            rgb(32, 224, 80), // water
         ];
         var lightMap = procgen.makeRGBMap([terrainMap], function(terrain) {
             return LightingCoefficients[terrain];
