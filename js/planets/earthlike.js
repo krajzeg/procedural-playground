@@ -53,7 +53,7 @@ var Earthlike = function() {
         // ===========================================================
         // temperature map
 
-        var PlanetClimate = 10.0;
+        var PlanetClimate = 0.0;
         var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate,
             ColdnessWithAltitude = 90.0 / LandHeight,
             TemperatureLocalVariation = 10.0;
@@ -128,7 +128,7 @@ var Earthlike = function() {
             if (terrain == ROCK)
                 return rock(x,y);
             if (terrain == SNOW)
-                return rgb(255, 255, 255);
+                return rgb(220, 220, 255);
         });
 
         function rock(x, y) {
@@ -143,13 +143,19 @@ var Earthlike = function() {
             var g = lerp(alpha, 0, 1, RockColor1[1], RockColor2[1]);
             var b = lerp(alpha, 0, 1, RockColor1[2], RockColor2[2]);
 
+            if ((variation + 1.0 + x * 0.02) * height % 0.2 < 0.02) {
+                r *= 0.75;
+                g *= 0.75;
+                b *= 0.75;
+            }
+
             return rgb(r, g, b);
         }
 
         function grass(x, y) {
             var temperature = temperatureMap.get(x, y);
-            var variation = variationMap.get(x, y);
-            var alpha = clamp(lerp(temperature + variation * 10.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
+            var variation = variationMap.get(x * 2 % textureWidth, y * 2 % textureHeight);
+            var alpha = clamp(lerp(temperature + variation * 13.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
 
             var r = lerp(alpha, 0, 1, PaleGrass.r, LushGrass.r) + randomInRange(-5.0, 5.0) * alpha;
             var g = lerp(alpha, 0, 1, PaleGrass.g, LushGrass.g) + randomInRange(-10.0, 10.0) * alpha;
