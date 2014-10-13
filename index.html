@@ -88,20 +88,27 @@
 			varying vec3 vColor;
 			varying vec3 vNormal;
 			varying vec2 vTextureCoords;
+			varying vec3 vPosition;
 
 			void main(void) {
+				// pass vertex properties to fragment shader
 				vColor = aColor;
 				vNormal = (mModelRotation * vec4(aNormal, 1.0)).xyz;
                 vTextureCoords = aTextureCoords;
 
+                // position is displaced using height map
                 vec3 positionWithHeight = texture2D(tHeight, aTextureCoords).r * aPosition;
+                vPosition = (mModel * vec4(positionWithHeight, 1.0)).xyz;
+
+                // final vertex position
         		gl_Position = mPerspective * mModel * vec4(positionWithHeight, 1.0);
 			}
 		</script>
 
 		<script id="shader-fragment" type="x-shader/x-fragment">
 			precision mediump float;			
-			
+
+			varying vec3 vPosition;
 			varying vec3 vColor;
 			varying vec3 vNormal;
             varying vec2 vTextureCoords;
@@ -114,8 +121,10 @@
 			uniform float ulDiffuse;
 
 			void main(void) {
+			    // color map
 				vec4 color = texture2D(tColor, vTextureCoords);
 
+                // normal map - bump mapping
 				vec2 bumpSample = texture2D(tBump, vTextureCoords).rg;
 				vec2 bump = vec2((bumpSample.r - 0.5) * (-3.1415), (bumpSample.g - 0.5) * 3.1415);
 
@@ -131,10 +140,19 @@
                 );
 				vec3 adjustedNormal = normalRotAboutX * normalRotAboutY * vNormal;
 
+                // diffuse lighting
 				float diffuseLight = max(0.0, dot(adjustedNormal, -uvLightDir));
+
+				// final color
 				vec4 adjustedColor = color * (ulAmbient + ulDiffuse * diffuseLight);
 
-				gl_FragColor = adjustedColor;
+				// specular lighting
+				vec3 viewerVector = normalize(-vPosition);
+				vec3 halfwayVector = normalize(viewerVector - uvLightDir);
+			    float specularLight = pow(dot(halfwayVector, adjustedNormal), 15.0) * 0.5;
+                adjustedColor += vec4(specularLight, specularLight, specularLight, 0);
+
+				gl_FragColor = vec4(adjustedColor.rgb, 1.0);
 			}
 		</script>
 
