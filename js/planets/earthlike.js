@@ -53,7 +53,7 @@ var Earthlike = function() {
         // ===========================================================
         // temperature map
 
-        var PlanetClimate = 25.0;
+        var PlanetClimate = 10.0;
         var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate,
             ColdnessWithAltitude = 90.0 / LandHeight,
             TemperatureLocalVariation = 10.0;
@@ -115,20 +115,47 @@ var Earthlike = function() {
             return rgb(redness, 64, blueness);
         });*/
 
-        var colorMap = procgen.makeRGBMap([terrainMap, rawHeight], function(terrain, rawHeight) {
+        var RockColor1 = [140, 120, 100], RockColor2 = [210, 180, 160];
+        var PaleGrass = {r: 130, g: 170, b: 130}, LushGrass = {r: 20, g: 100, b: 20};
+        var colorMap = procgen.makeRGBMap([terrainMap, rawHeight], function(terrain, rawHeight, x, y) {
             // water
             if (terrain == WATER)
                 return rgb(20 + rawHeight * 20, 20 + rawHeight * 20, 120 + rawHeight * 60);
             if (terrain == GRASS)
-                return rgb(60, 160, 60);
+                return grass(x,y);
             if (terrain == SAND)
                 return rgb(220, 180, 100);
             if (terrain == ROCK)
-                return rgb(127, 127, 127);
+                return rock(x,y);
             if (terrain == SNOW)
                 return rgb(255, 255, 255);
         });
 
+        function rock(x, y) {
+            var variation = variationMap.get(x,y);
+            var height = heightMap.get(x,y);
+            //var alpha = Math.abs((variation + 1.0) % 0.2 - 0.1) / 0.2 + (height - 1.0) * 8;
+            var alpha = (height - RockHeight) * 50;
+            alpha = clamp(alpha, 0.0, 1.0);
+
+            var r = lerp(alpha, 0, 1, RockColor1[0], RockColor2[0]);
+            var g = lerp(alpha, 0, 1, RockColor1[1], RockColor2[1]);
+            var b = lerp(alpha, 0, 1, RockColor1[2], RockColor2[2]);
+
+            return rgb(r, g, b);
+        }
+
+        function grass(x, y) {
+            var temperature = temperatureMap.get(x, y);
+            var variation = variationMap.get(x, y);
+            var alpha = clamp(lerp(temperature + variation * 10.0, 8.0, 30.0, 0.0, 1.0), 0.0, 1.0);
+
+            var r = lerp(alpha, 0, 1, PaleGrass.r, LushGrass.r) + randomInRange(-5.0, 5.0) * alpha;
+            var g = lerp(alpha, 0, 1, PaleGrass.g, LushGrass.g) + randomInRange(-10.0, 10.0) * alpha;
+            var b = lerp(alpha, 0, 1, PaleGrass.b, LushGrass.b) + randomInRange(-5.0, 5.0) * alpha;
+
+            return rgb(r,g,b);
+        }
 
 
         return {
