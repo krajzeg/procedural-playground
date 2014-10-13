@@ -66,22 +66,36 @@ var SimplexNoise = function () {
     // ========================================================================================
 
     function makeOctaveSphericalNoise(seed, octaves, startingScale) {
-        var scale = startingScale;
-        var noises = new Array(octaves);
-        for (var n = 0; n < octaves; n++) {
-            noises[n] = makeSpherical2DNoise(seed, scale);
+        var seeds = new Array(octaves);
+        for (var i = 0; i < octaves; i++) {
+            seeds[i] = seed;
             seed = (seed * 15227 + 11699) % 32987;
-            scale *= 2;
         }
 
         return function(x, y) {
+            var xSine = Math.sin(x), xCosine = Math.cos(x);
+
+            var radius = startingScale * Math.sin(y);
+            var sum = 0.0, noiseMultiplier = 0.5, yMultiplier = 2 * startingScale / Math.PI;
+
+            for (var i = 0; i < octaves; i++) {
+                sum += noiseMultiplier * noise3D(xSine * radius, y * yMultiplier, xCosine * radius + seeds[i]);
+                radius *= 2;
+                yMultiplier *= 2;
+                noiseMultiplier *= 0.5;
+            }
+
+            return sum;
+        };
+
+        /*return function(x, y) {
             var multiplier = 0.5, sum = 0.0;
             for (var i = 0; i < octaves; i++) {
                 sum += multiplier * noises[i](x, y);
                 multiplier *= 0.5;
             }
             return sum;
-        }
+        }*/
     }
 
     // ========================================================================================

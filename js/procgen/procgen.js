@@ -25,7 +25,7 @@ ProcGen = function(textureWidth, textureHeight) {
         var octaveNoise = SimplexNoise.makeOctaveSphericalNoise(seed, octaveCount, roughness);
         var buffer = Buffers.float(textureWidth, textureHeight);
 
-        var noiseX = 0.0, noiseY = 0.0, noiseStepX = 1 / textureWidth, noiseStepY = 1 / textureHeight;
+        var noiseX = 0.0, noiseY = 0.0, noiseStepX = Math.PI * 2 / textureWidth, noiseStepY = Math.PI / textureHeight;
         var endLoc = textureWidth * textureHeight;
         var targetArray = buffer.array;
         for (var loc = 0; loc < endLoc;) {
