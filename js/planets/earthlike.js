@@ -15,35 +15,50 @@ var Earthlike = function() {
      */
     function generateEarthlikePlanet() {
 
+        // =================================================================
+        // input - raw height map + an additional map used for perturbations
+
         var seed = Math.random() * 32767.0;
+
         var rawHeight = procgen.simplexNoise(Math.random() * 32767, 6, 1.0);
         var variationMap = procgen.simplexNoise(Math.random() * 32767, 3, 4.0);
 
         // ===========================================================
         // height map
 
-        var WaterThreshold = 0.1, LandRange = 1.0 - WaterThreshold;
-        var LandHeight = 0.2, MountainSteepness = 2.0;
-        var heightMap = procgen.makeFloatMap([rawHeight], function(rawH) {
+        var WaterThreshold = 0.1;
+        var LandRange = 1.0 - WaterThreshold;
+        var MountainSteepness = 2.0;
+
+        var heightAboveSeaMap = procgen.makeFloatMap([rawHeight], function(rawH) {
             if (rawH < WaterThreshold)
-                return 0.98;
+                return 0.0; // everything below water is at sea level, by definition :)
             else
-                return 1.0 + LandHeight * Math.pow((rawH - WaterThreshold) / LandRange, MountainSteepness);
+                return Math.pow((rawH - WaterThreshold) / LandRange, MountainSteepness);
+        });
+
+        var DisplacementSize = 0.2;
+        var displacementMap = procgen.makeFloatMap([heightAboveSeaMap], function(height) {
+            if (!height) {
+                return 0.985;
+            }
+            else
+                return 1.0 + height * DisplacementSize;
         });
 
         // ===========================================================
         // bump map
 
-        var BumpMapping90DegreeTilt = 0.02;
+        var BumpMappingHardness = 0.1 * DisplacementSize;
         var bumpMap = procgen.makeRGBMap([], function(x, y) {
             var left = (x + textureWidth - 1) % textureWidth, right = (x + 1) % textureWidth;
             var up = (y + textureHeight - 1) % textureHeight, down = (y + 1) % textureHeight;
 
-            var h = heightMap.get(x,y), hL = heightMap.get(left,y), hR = heightMap.get(right, y),
-                hU = heightMap.get(x,up), hD = heightMap.get(x, down);
+            var hL = displacementMap.get(left,y), hR = displacementMap.get(right, y),
+                hU = displacementMap.get(x,up), hD = displacementMap.get(x, down);
 
-            var xTilt = clamp( ((hL - h) + (h - hR)) / BumpMapping90DegreeTilt, -1.0, 1.0),
-                yTilt = clamp( ((hU - h) + (h - hD)) / BumpMapping90DegreeTilt, -1.0, 1.0);
+            var xTilt = clamp( (hL - hR) / BumpMappingHardness, -1.0, 1.0),
+                yTilt = clamp( (hU - hD) / BumpMappingHardness, -1.0, 1.0);
 
             var r = 128 + xTilt * 127, g = 128 + yTilt * 127;
 
@@ -55,13 +70,12 @@ var Earthlike = function() {
 
         var PlanetClimate = 0.0;
         var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate,
-            ColdnessWithAltitude = 90.0 / LandHeight,
+            ColdnessWithAltitude = 90.0,
             TemperatureLocalVariation = 10.0;
         var equatorY = textureHeight / 2;
 
-        var temperatureMap = procgen.makeFloatMap([heightMap, variationMap], function(height, variation, x, y) {
-            if (height < 1.0) return 10.0;
-            var heightAboveSea = height - 1.0;
+        var temperatureMap = procgen.makeFloatMap([heightAboveSeaMap, variationMap], function(heightAboveSea, variation, x, y) {
+            if (!heightAboveSea) return 10.0;
 
             var temperature = lerp(Math.abs(y - equatorY), 0, equatorY, EquatorTemperature, PoleTemperature);
             temperature += TemperatureLocalVariation * variation;
@@ -74,15 +88,15 @@ var Earthlike = function() {
         // terrain map
 
         var GRASS = 0, SAND = 1, ROCK = 2, SNOW = 3, WATER = 4;
-        var RockHeight = 1.0 + LandHeight * 0.05;
-        var terrainMap = procgen.makeIntMap([heightMap, temperatureMap], function(height, temperature) {
+        var RockHeight = 0.05;
+        var terrainMap = procgen.makeIntMap([heightAboveSeaMap, temperatureMap], function(height, temperature) {
             // below sea level?
-            if (height < 1.0) return WATER;
+            if (!height) return WATER;
 
             // fuzzy pick actual terrain
             var snowChance = clamp(lerp(temperature, 1.0, -2.0, 0.0, 1.0), 0.0, 1.0);
             var sandChance = clamp(Math.pow((temperature - 25.0) / 10.0, 3.0), 0.0, 1.0);
-            var rockChance = clamp(clamp((height - RockHeight) / 0.01, 0.0, 1.0) - snowChance - sandChance, 0.0, 1.0);
+            var rockChance = clamp(clamp((height - RockHeight) / 0.05, 0.0, 1.0) - snowChance - sandChance, 0.0, 1.0);
             var grassChance = clamp(1 - rockChance - sandChance - snowChance, 0.0, 1.0);
 
             return fuzzyPick([grassChance, sandChance, rockChance, snowChance])
@@ -133,7 +147,6 @@ var Earthlike = function() {
 
         function rock(x, y) {
             var variation = variationMap.get(x,y);
-            var height = heightMap.get(x,y);
             //var alpha = Math.abs((variation + 1.0) % 0.2 - 0.1) / 0.2 + (height - 1.0) * 8;
             var bandComponent = Math.abs((variation + 1.0) % 0.4 - 0.2) / 0.2;
             var randomComponent = randomInRange(-0.5, 0.5);
@@ -143,7 +156,7 @@ var Earthlike = function() {
             var g = lerp(alpha, 0, 1, RockColor1[1], RockColor2[1]);
             var b = lerp(alpha, 0, 1, RockColor1[2], RockColor2[2]);
 
-            if ((variation + 1.0 + x * 0.02) * height % 0.2 < 0.02) {
+            if ((variation + 1.0 + x * 0.02) % 0.2 < 0.02) {
                 r *= 0.75;
                 g *= 0.75;
                 b *= 0.75;
@@ -166,7 +179,7 @@ var Earthlike = function() {
 
 
         return {
-            heightMap: heightMap,
+            heightMap: displacementMap,
             colorMap: colorMap,
             bumpMap: bumpMap,
             lightMap: lightMap
