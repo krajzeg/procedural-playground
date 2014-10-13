@@ -14,11 +14,9 @@ ProcGen = function(textureWidth, textureHeight) {
     return {
         simplexNoise: simplexNoise,
 
-        rgbFromXY: rgbFromXY,
-        floatFromXY: floatFromXY,
-
-        derivedRGB: derivedRGB,
-        derivedFloat: derivedFloat
+        makeRGBMap: makeRGB,
+        makeFloatMap: makeFloat,
+        makeIntMap: makeInt
     };
 
     function simplexNoise(seed, octaveCount, roughness) {
@@ -40,49 +38,39 @@ ProcGen = function(textureWidth, textureHeight) {
         return buffer;
     }
 
-    function rgbFromXY(fn) {
-        return xyBuffer(Buffers.rgb(textureWidth, textureHeight), fn);
-    }
-
-    function floatFromXY(fn) {
-        return xyBuffer(Buffers.float(textureWidth, textureHeight), fn);
-    }
-
-    function derivedRGB(sources, fn) {
+    function makeRGB(sources, fn) {
         return derivedBuffer(sources, Buffers.rgb(textureWidth, textureHeight), fn);
     }
 
-    function derivedFloat(sources, fn) {
-        return derivedBuffer(sources, Buffers.float(textureWidth, textureHeight), fn)
+    function makeFloat(sources, fn) {
+        return derivedBuffer(sources, Buffers.float(textureWidth, textureHeight), fn);
     }
 
-    function xyBuffer(target, fn) {
-        var targetArray = target.array;
-        var x = 0, y = 0, wrapX = textureWidth;
-        var endLoc = textureWidth * textureHeight;
-        for (var loc = 0; loc != endLoc; loc++) {
-            targetArray[loc] = fn(x, y);
-            if (++x == wrapX) {
-                y++;
-                x = 0;
-            }
-        }
-
-        return target;
+    function makeInt(sources, fn) {
+        return derivedBuffer(sources, Buffers.int(textureWidth, textureHeight), fn);
     }
 
     function derivedBuffer(sources, target, fn) {
-        var args = new Array(sources.length), sourceCount = sources.length;
-        var arrays = sources.map(function(source) {
+        var args = new Array(sources.length + 2), sourceCount = sources.length,
+            xIndex = sources.length, yIndex = sources.length + 1;
+
+        var sourceArrays = sources.map(function(source) {
             return source.array;
         });
 
         var targetArray = target.array;
-
+        var wrapX = textureWidth;
         var endLoc = textureWidth * textureHeight;
+        args[xIndex] = 0; args[yIndex] = 0;
+
         for (var loc = 0; loc != endLoc; loc++) {
             for (var i = 0; i < sourceCount; i++)
-                args[i] = arrays[i][loc];
+                args[i] = sourceArrays[i][loc];
+            args[xIndex]++;
+            if (args[xIndex] == wrapX) {
+                args[xIndex] = 0;
+                args[yIndex]++;
+            }
             targetArray[loc] = fn.apply(null, args);
         }
 

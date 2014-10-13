@@ -1,12 +1,6 @@
 var Buffers = function(){
 
-    function FloatBuffer(width, height) {
-        this.array = new Float32Array(width * height);
-
-        this.width = width;
-        this.height = height;
-    }
-    FloatBuffer.prototype = {
+    var SingleValueMethods = {
         get: function(x,y) {
             return this.array[y * this.width + x];
         },
@@ -15,6 +9,23 @@ var Buffers = function(){
             this.array[y * this.width + x] = v;
         }
     };
+
+    function FloatBuffer(width, height) {
+        this.array = new Float32Array(width * height);
+
+        this.width = width;
+        this.height = height;
+    }
+    FloatBuffer.prototype = _.extend({}, SingleValueMethods);
+
+    function IntBuffer(width, height) {
+        this.array = new Int16Array(width * height);
+
+        this.width = width;
+        this.height = height;
+    }
+    IntBuffer.prototype = _.extend({}, SingleValueMethods);
+
 
     function RGBBuffer(width, height) {
         this.array = new Uint32Array(width * height);
@@ -49,6 +60,10 @@ var Buffers = function(){
 
         float: function(width, height) {
             return new FloatBuffer(width, height);
+        },
+
+        int: function(width, height) {
+            return new IntBuffer(width, height);
         }
     };
 }();
