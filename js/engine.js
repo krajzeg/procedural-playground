@@ -82,7 +82,13 @@ window.Engine = function() {
             if (self.worker)
                 return;
 
-            self.worker = new Worker('js/procgen/worker.js');
+            try {
+                self.worker = new Worker('js/procgen/worker.js');
+            } catch (e) {
+                window.alert("Unable to create worker.\n" +
+                "You have to setup a local server, security constraints prevent creating workers for pages opened from the filesystem.");
+                return;
+            }
             self.worker.addEventListener('message', function(evt) {
                 var msg = evt.data;
                 if (msg.type == 'done') {
