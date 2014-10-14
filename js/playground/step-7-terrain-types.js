@@ -142,69 +142,32 @@ var Earthlike = function() {
 
         // color constants
         var WaterShallow = rgb(24, 24, 126), WaterDeep = rgb(0, 0, 60),
-            SandColor = rgb(220, 180, 100), SnowColor = rgb(220, 220, 255);
-
-        var RockColor1 = rgb(160, 140, 110), RockColor2 = rgb(210, 180, 160);
-        var PaleGrass = rgb(130, 170, 130), LushGrass = rgb(20, 100, 20);
+            GrassColor = rgb(60, 120, 60), SandColor = rgb(220, 180, 100),
+            SnowColor = rgb(220, 220, 255), RockColor = rgb(180, 160, 140);
 
         // generate based on terrain type
-        var colorMap = procgen.makeRGBMap([terrainMap, heightMap], function(terrain, height, x, y) {
+        var colorMap = procgen.makeRGBMap([terrainMap, heightMap], function(terrain, height) {
             switch(terrain) {
                 case WATER: return colorLerp(height, -1.0, 0.0, WaterDeep, WaterShallow);
 
-                case GRASS: return grass(x,y);
+                case GRASS: return GrassColor;
                 case SAND: return SandColor;
                 case SNOW: return SnowColor;
-                case ROCK: return rock(x,y);
+                case ROCK: return RockColor;
             }
-        });
-
-        // =====================================================
-        // individual terrain type textures
-
-        function rock(x, y) {
-            // reuse the variation map
-            var variation = variationMap.get(x,y);
-            // make circular bands
-            var bandComponent = Math.abs((variation + 1.0) % 0.2 - 0.1) / 0.1;
-            // add random component to make it less artificial
-            var randomComponent = randomInRange(-0.5, 0.5);
-            // interpolate between two colors
-            var alpha = clamp(bandComponent + randomComponent, 0.0, 1.0);
-            return colorLerp(alpha, 0, 1, RockColor1, RockColor2);
-        }
-
-        function grass(x, y) {
-            // grass will get more pale with lower temperature
-            var temperature = temperatureMap.get(x, y);
-            // we will use some local variation too
-            var variation = variationMap.get(x * 2 % textureWidth, y * 2 % textureHeight);
-            // interpolate between the two grass colors
-            var alpha = clamp(lerp(temperature + variation * 13.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
-            return colorLerp(alpha, 0, 1, PaleGrass, LushGrass);
-        }
-
-        // =====================================================
-        // light map - controls the ambient, diffuse, specular coefficients of the light
-        var LightingCoefficients = {};
-        LightingCoefficients[GRASS] = rgb(32, 224, 10);  // grass - not reflective
-        LightingCoefficients[SAND]  = rgb(32, 224, 0);   // sand - TOTALLY not reflective
-        LightingCoefficients[ROCK]  = rgb(32, 224, 64);  // rock is a bit shiny
-        LightingCoefficients[SNOW]  = rgb(32, 224, 196); // snow is very reflective, high specular makes it "glow" in light
-        LightingCoefficients[WATER] = rgb(32, 224, 80);  // water is also pretty reflective
-        var lightMap = procgen.makeRGBMap([terrainMap], function(terrain) {
-            return LightingCoefficients[terrain];
         });
 
         // =====================================================
         // return everything to the engine
 
         return {
-            // we have generated everything now!
+            // we have generated almost everything
             colorMap: colorMap,
             displacementMap: displacementMap,
             bumpMap: bumpMap,
-            lightMap: lightMap
+
+            // defaults just for the light map
+            lightMap: procgen.defaultLightMap()
         };
     }
 

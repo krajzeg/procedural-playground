@@ -20,7 +20,7 @@ var Earthlike = function() {
         // random seed to make the noise different each time
         var seed = randomInRange(0, 1000000);
         if (!randomize)
-            seed = 368579;
+            seed = 348573;
 
         // generate - 6 octaves to get enough detail, and standard "roughness"
         var rawHeight = procgen.simplexNoise(seed, 6, 1.0);
@@ -48,13 +48,13 @@ var Earthlike = function() {
         // temperature map - this will come in useful later
 
         var PlanetClimate = 0.0,
-            ColdnessWithAltitude = 80.0,
+            ColdnessWithAltitude = 90.0,
             TemperatureLocalVariation = 10.0;
         if (randomize) {
             PlanetClimate = randomInRange(-30.0, +30.0);
             ColdnessWithAltitude = randomInRange(40.0, 140.0);
         }
-        var EquatorTemperature = 45.0 + PlanetClimate, PoleTemperature = -15.0 + PlanetClimate;
+        var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate;
         var equatorY = textureHeight / 2;
 
         var temperatureMap = procgen.makeFloatMap([heightMap, variationMap], function(height, variation, x, y) {
@@ -74,7 +74,7 @@ var Earthlike = function() {
         // =====================================================
         // displacement map - add some shape to the ball
 
-        var DisplacementSize = 0.2;
+        var DisplacementSize = 0.1;
         var displacementMap = procgen.makeFloatMap([heightMap], function(height) {
             if (height <= 0.0) {
                 // we "sink" the ocean even lower than 1.0 to make the land "pop" up
@@ -110,101 +110,43 @@ var Earthlike = function() {
             return rgb(r, g, 0);
         });
 
-        // ===========================================================
-        // terrain map - divide the globe into terrain types
-
-        // our 5 types
-        var GRASS = 0, SAND = 1, ROCK = 2, SNOW = 3, WATER = 4;
-
-        // some constants
-        var RockHeight = 0.2, SandTemperature = 23.0;
-        if (randomize) {
-            RockHeight = randomInRange(0.03, 0.2);
-            SandTemperature += randomInRange(-10.0, 10.0);
-        }
-
-        var terrainMap = procgen.makeIntMap([heightMap, temperatureMap], function(height, temperature) {
-            // below sea level?
-            if (height < 0.0) return WATER;
-
-            // determine the change of each type of terrain
-            var snowChance = clamp(lerp(temperature, 1.0, -2.0, 0.0, 1.0), 0.0, 1.0);
-            var sandChance = clamp(Math.pow((temperature - SandTemperature) / 10.0, 3.0), 0.0, 1.0);
-            var rockChance = clamp(clamp((height - RockHeight) / 0.05, 0.0, 1.0) - snowChance - sandChance, 0.0, 1.0);
-            var grassChance = clamp(1 - rockChance - sandChance - snowChance, 0.0, 1.0);
-
-            // pick one of them
-            return fuzzyPick([grassChance, sandChance, rockChance, snowChance])
-        });
-
         // =====================================================
         // color map - visualise the Simplex noise directly for now
 
+        // we temporarily switch to showing the temperature instead of actual color
+        var colorMap = procgen.makeRGBMap([temperatureMap], function (temp) {
+            var blueness = clamp(lerp(temp, 10.0, -30.0, 0, 255), 0, 255); // blue when cold
+            var redness = clamp(lerp(temp, 10.0, 50.0, 0, 255), 0, 255); // red when hot
+            return rgb(redness, 64, blueness);
+        });
+
+        /*
         // color constants
         var WaterShallow = rgb(24, 24, 126), WaterDeep = rgb(0, 0, 60),
-            SandColor = rgb(220, 180, 100), SnowColor = rgb(220, 220, 255);
+            LandLow = rgb(180, 140, 110), LandHigh = rgb(255, 240, 200);
 
-        var RockColor1 = rgb(160, 140, 110), RockColor2 = rgb(210, 180, 160);
-        var PaleGrass = rgb(130, 170, 130), LushGrass = rgb(20, 100, 20);
-
-        // generate based on terrain type
-        var colorMap = procgen.makeRGBMap([terrainMap, heightMap], function(terrain, height, x, y) {
-            switch(terrain) {
-                case WATER: return colorLerp(height, -1.0, 0.0, WaterDeep, WaterShallow);
-
-                case GRASS: return grass(x,y);
-                case SAND: return SandColor;
-                case SNOW: return SnowColor;
-                case ROCK: return rock(x,y);
+        // generate based on land/water status
+        var colorMap = procgen.makeRGBMap([heightMap], function(height) {
+            if (height > 0.0) {
+                // land!
+                return colorLerp(height, 0.0, 1.0, LandLow, LandHigh);
+            } else {
+                // water!
+                return colorLerp(height, -1.0, 0.0, WaterDeep, WaterShallow);
             }
-        });
-
-        // =====================================================
-        // individual terrain type textures
-
-        function rock(x, y) {
-            // reuse the variation map
-            var variation = variationMap.get(x,y);
-            // make circular bands
-            var bandComponent = Math.abs((variation + 1.0) % 0.2 - 0.1) / 0.1;
-            // add random component to make it less artificial
-            var randomComponent = randomInRange(-0.5, 0.5);
-            // interpolate between two colors
-            var alpha = clamp(bandComponent + randomComponent, 0.0, 1.0);
-            return colorLerp(alpha, 0, 1, RockColor1, RockColor2);
-        }
-
-        function grass(x, y) {
-            // grass will get more pale with lower temperature
-            var temperature = temperatureMap.get(x, y);
-            // we will use some local variation too
-            var variation = variationMap.get(x * 2 % textureWidth, y * 2 % textureHeight);
-            // interpolate between the two grass colors
-            var alpha = clamp(lerp(temperature + variation * 13.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
-            return colorLerp(alpha, 0, 1, PaleGrass, LushGrass);
-        }
-
-        // =====================================================
-        // light map - controls the ambient, diffuse, specular coefficients of the light
-        var LightingCoefficients = {};
-        LightingCoefficients[GRASS] = rgb(32, 224, 10);  // grass - not reflective
-        LightingCoefficients[SAND]  = rgb(32, 224, 0);   // sand - TOTALLY not reflective
-        LightingCoefficients[ROCK]  = rgb(32, 224, 64);  // rock is a bit shiny
-        LightingCoefficients[SNOW]  = rgb(32, 224, 196); // snow is very reflective, high specular makes it "glow" in light
-        LightingCoefficients[WATER] = rgb(32, 224, 80);  // water is also pretty reflective
-        var lightMap = procgen.makeRGBMap([terrainMap], function(terrain) {
-            return LightingCoefficients[terrain];
-        });
+        });*/
 
         // =====================================================
         // return everything to the engine
 
         return {
-            // we have generated everything now!
+            // we have generated almost everything
             colorMap: colorMap,
             displacementMap: displacementMap,
             bumpMap: bumpMap,
-            lightMap: lightMap
+
+            // defaults just for the light map
+            lightMap: procgen.defaultLightMap()
         };
     }
 

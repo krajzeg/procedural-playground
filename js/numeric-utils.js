@@ -24,6 +24,23 @@ function lerp(value, sourceFrom, sourceTo, targetFrom, targetTo) {
 }
 
 /**
+ * Maps a value from a numeric range to a range of colors
+ *
+ * @param value {number} the source value
+ * @param sourceFrom {number} the low end of the source range
+ * @param sourceTo {number} the high end of the source range
+ * @param fromColor {number} the color corresponding to the low end
+ * @param toColor {number} the color corresponding to the high end
+ */
+function colorLerp(value, sourceFrom, sourceTo, fromColor, toColor) {
+    var a = (value - sourceFrom) / (sourceTo - sourceFrom), ia = 1 - a;
+    var fromR = fromColor & 0xff, fromG = (fromColor & 0xff00) >> 8, fromB = (fromColor & 0xff0000) >> 16;
+    var toR = toColor & 0xff, toG = (toColor & 0xff00) >> 8, toB = (toColor & 0xff0000) >> 16;
+    var r = a * toR + ia * fromR, g = a * toG + ia * fromG, b = a * toB + ia * fromB;
+    return rgb(r, g, b);
+}
+
+/**
  * Given an array of weights, picks one index randomly - with probability according
  * to the weights.
  *

@@ -6,7 +6,7 @@
  * @returns {number} a 32-bit ABGR value
  */
 function rgb(r, g, b) {
-    return 0xFF000000 | (b << 16) | (g << 8) | r;
+    return 0xFF000000 | (b << 16) | (g << 8) | (r & 0xFF);
 }
 
 ProcGen = function(textureWidth, textureHeight) {
@@ -19,7 +19,7 @@ ProcGen = function(textureWidth, textureHeight) {
         makeIntMap: makeInt,
 
         defaultColorMap: defaultColorMap,
-        defaultHeightMap: defaultHeightMap,
+        defaultDisplacementMap: defaultDisplacementMap,
         defaultBumpMap: defaultBumpMap,
         defaultLightMap: defaultLightMap
     };
@@ -44,14 +44,23 @@ ProcGen = function(textureWidth, textureHeight) {
     }
 
     function makeRGB(sources, fn) {
+        if (typeof sources == 'function') {
+            fn = sources; sources = [];
+        }
         return derivedBuffer(sources, Buffers.rgb(textureWidth, textureHeight), fn);
     }
 
     function makeFloat(sources, fn) {
+        if (typeof sources == 'function') {
+            fn = sources; sources = [];
+        }
         return derivedBuffer(sources, Buffers.float(textureWidth, textureHeight), fn);
     }
 
     function makeInt(sources, fn) {
+        if (typeof sources == 'function') {
+            fn = sources; sources = [];
+        }
         return derivedBuffer(sources, Buffers.int(textureWidth, textureHeight), fn);
     }
 
@@ -96,7 +105,7 @@ ProcGen = function(textureWidth, textureHeight) {
         });
     }
 
-    function defaultHeightMap() {
+    function defaultDisplacementMap() {
         return makeFloat([], function() { return 1.0; });
     }
 

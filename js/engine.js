@@ -92,7 +92,6 @@ window.Engine = function() {
                 }
             });
             var randomizeParams = document.getElementById("chk-randomize").checked;
-            console.log("RND:", randomizeParams);
             self.worker.postMessage({
                 randomize: randomizeParams
             });
@@ -113,7 +112,7 @@ window.Engine = function() {
             _.extend(planet, {
                 textures: {
                     color: glu.Texture.fromRGBBuffer(planet.colorMap),
-                    height: glu.Texture.fromFloatBuffer(planet.heightMap),
+                    height: glu.Texture.fromFloatBuffer(planet.displacementMap),
                     bump: glu.Texture.fromRGBBuffer(planet.bumpMap),
                     lightParams: glu.Texture.fromRGBBuffer(planet.lightMap)
                 }
