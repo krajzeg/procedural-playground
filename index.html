@@ -45,19 +45,6 @@
                         document.getElementById('btn-regenerate').innerHTML = 'Regenerate!';
                         regenButton.classList.remove('ongoing');
                     }
-
-                    var textureList = $('#textures');
-                    textureList.innerHTML = '';
-                    if (engine.planet) {
-                        _.map(engine.planet, function(value, key) {
-                            if (key.indexOf("Map") >= 0) {
-                                var link = document.createElement('a');
-                                link.href = '#';
-                                link.innerHTML = key;
-                                textureList.appendChild(link);
-                            }
-                        });
-                    }
                 });
 
                 // start!
@@ -174,11 +161,6 @@
                 <div>
                     <input id="chk-randomize" type="checkbox"><label for="chk-randomize">Randomize parameters?</label>
                 </div>
-            </div>
-        </div>
-        <div class="texture-list">
-            <b>Textures:</b>
-            <div id="textures">
             </div>
         </div>
 	</body>
