@@ -5,7 +5,7 @@ importScripts(
     '../procgen/simplex-noise.js',
     '../procgen/texture-buffers.js',
     '../procgen/procgen.js',
-    '../planets/earthlike.js'
+    '../playground/main.js'
 );
 
 self.addEventListener('message', function(msg) {

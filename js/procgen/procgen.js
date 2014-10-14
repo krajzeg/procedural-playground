@@ -16,7 +16,12 @@ ProcGen = function(textureWidth, textureHeight) {
 
         makeRGBMap: makeRGB,
         makeFloatMap: makeFloat,
-        makeIntMap: makeInt
+        makeIntMap: makeInt,
+
+        defaultColorMap: defaultColorMap,
+        defaultHeightMap: defaultHeightMap,
+        defaultBumpMap: defaultBumpMap,
+        defaultLightMap: defaultLightMap
     };
 
     function simplexNoise(seed, octaveCount, roughness) {
@@ -77,5 +82,25 @@ ProcGen = function(textureWidth, textureHeight) {
         return target;
     }
 
+    // ====================================== defaults for easy work
 
+    function defaultColorMap() {
+        return makeRGB([], function() {
+            return rgb(127, 127, 127);
+        });
+    }
+
+    function defaultBumpMap() {
+        return makeRGB([], function() {
+            return rgb(128, 128, 128);
+        });
+    }
+
+    function defaultHeightMap() {
+        return makeFloat([], function() { return 1.0; });
+    }
+
+    function defaultLightMap() {
+        return makeRGB([], function() { return rgb(32,224,0) });
+    }
 };
