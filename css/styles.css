@@ -33,6 +33,10 @@ body {
     background: #444444;
 }
 
+.control-panel div {
+    margin-top: 10px;
+}
+
 .texture-list {
     position: fixed;
     top: 5px; right: 5px;
@@ -45,4 +49,8 @@ body {
 .texture-list a {
     color: #fff;
     display: block;
+}
+
+label {
+    color: #777;
 }

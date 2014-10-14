@@ -91,7 +91,11 @@ window.Engine = function() {
                     self.useNewPlanet(msg.planet);
                 }
             });
-            self.worker.postMessage({start: "now!"});
+            var randomizeParams = document.getElementById("chk-randomize").checked;
+            console.log("RND:", randomizeParams);
+            self.worker.postMessage({
+                randomize: randomizeParams
+            });
 
             document.dispatchEvent(new Event('updateState'));
         },

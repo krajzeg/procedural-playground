@@ -13,7 +13,7 @@ var Earthlike = function() {
     /**
      * This function here is the meat of the whole procedural generation.
      */
-    function generateEarthlikePlanet() {
+    function generateEarthlikePlanet(randomize) {
 
         // =================================================================
         // input - raw height map + an additional map used for perturbations
@@ -27,14 +27,21 @@ var Earthlike = function() {
         // height map
 
         var WaterThreshold = 0.1;
-        var LandRange = 1.0 - WaterThreshold;
         var MountainSteepness = 2.0;
+        var MaxAltitude = 1.0;
+        if (randomize) {
+            WaterThreshold = randomInRange(-0.5, 0.5);
+            MountainSteepness = randomInRange(1.0, 2.5);
+            MaxAltitude = randomInRange(0.8,1.2);
+            console.log(WaterThreshold, MountainSteepness);
+        }
+        var LandRange = 1.0 - WaterThreshold;
 
         var heightAboveSeaMap = procgen.makeFloatMap([rawHeight], function(rawH) {
             if (rawH < WaterThreshold)
                 return 0.0; // everything below water is at sea level, by definition :)
             else
-                return Math.pow((rawH - WaterThreshold) / LandRange, MountainSteepness);
+                return MaxAltitude * Math.pow((rawH - WaterThreshold) / LandRange, MountainSteepness);
         });
 
         var DisplacementSize = 0.2;
@@ -68,10 +75,14 @@ var Earthlike = function() {
         // ===========================================================
         // temperature map
 
-        var PlanetClimate = 0.0;
-        var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate,
+        var PlanetClimate = 0.0,
             ColdnessWithAltitude = 90.0,
             TemperatureLocalVariation = 10.0;
+        if (randomize) {
+            PlanetClimate = randomInRange(-30.0, +30.0);
+            ColdnessWithAltitude = randomInRange(40.0, 140.0);
+        }
+        var EquatorTemperature = 40.0 + PlanetClimate, PoleTemperature = -20.0 + PlanetClimate;
         var equatorY = textureHeight / 2;
 
         var temperatureMap = procgen.makeFloatMap([heightAboveSeaMap, variationMap], function(heightAboveSea, variation, x, y) {
@@ -88,14 +99,18 @@ var Earthlike = function() {
         // terrain map
 
         var GRASS = 0, SAND = 1, ROCK = 2, SNOW = 3, WATER = 4;
-        var RockHeight = 0.05;
+        var RockHeight = 0.05, SandTemperature = 25.0;
+        if (randomize) {
+            RockHeight = randomInRange(0.03, 0.2);
+            SandTemperature += randomInRange(-10.0, 10.0);
+        }
         var terrainMap = procgen.makeIntMap([heightAboveSeaMap, temperatureMap], function(height, temperature) {
             // below sea level?
             if (!height) return WATER;
 
             // fuzzy pick actual terrain
             var snowChance = clamp(lerp(temperature, 1.0, -2.0, 0.0, 1.0), 0.0, 1.0);
-            var sandChance = clamp(Math.pow((temperature - 25.0) / 10.0, 3.0), 0.0, 1.0);
+            var sandChance = clamp(Math.pow((temperature - SandTemperature) / 10.0, 3.0), 0.0, 1.0);
             var rockChance = clamp(clamp((height - RockHeight) / 0.05, 0.0, 1.0) - snowChance - sandChance, 0.0, 1.0);
             var grassChance = clamp(1 - rockChance - sandChance - snowChance, 0.0, 1.0);
 

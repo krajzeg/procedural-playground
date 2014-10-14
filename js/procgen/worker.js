@@ -9,7 +9,7 @@ importScripts(
 );
 
 self.addEventListener('message', function(msg) {
-    var planet = Earthlike();
+    var planet = Earthlike(msg.data.randomize);
     self.postMessage(
         {type: 'done', planet: planet}
     );
