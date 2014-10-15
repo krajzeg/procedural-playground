@@ -16,9 +16,7 @@ var Earthlike = function() {
     function generateEarthlikePlanet(randomize) {
         // generate a granite-like random texture
         var colorMap = procgen.makeRGBMap(function(x,y) {
-            var brightness = randomInRange(80, 160);
-            // uncomment this for a different simple texture: var brightness = 128 + Math.sin((x+y) * 0.1) * 64;
-            return rgb(brightness, 0, 0);
+            return rgb(x % 256, y % 256, 0);
         });
 
         return {
