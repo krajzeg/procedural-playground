@@ -15,7 +15,7 @@ function createBallMesh(radius, slices, stacks) {
 			vertices.push(x, y, z);
 			colors.push(Math.abs(x), Math.abs(y), Math.abs(z));
 
-            textureCoords.push(stack / stacks, slice / slices);
+            textureCoords.push(1.0 - stack / stacks, slice / slices);
 
 			var normal = [x,y,z];
 			vec3.normalize(normal);

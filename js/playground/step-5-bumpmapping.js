@@ -71,7 +71,7 @@ var Earthlike = function() {
 
             // calculate how much slope we have, and in which direction
             // this is clamped to (-1,1) so we never go past vertical :)
-            var xTilt = clamp( (hL - hR) / BumpMappingHardness, -1.0, 1.0),
+            var xTilt = clamp( (hR - hL) / BumpMappingHardness, -1.0, 1.0),
                 yTilt = clamp( (hU - hD) / BumpMappingHardness, -1.0, 1.0);
 
             // translate this into R and G component for the bump map
@@ -103,7 +103,7 @@ var Earthlike = function() {
 
         return {
             // we have generated almost everything
-            colorMap: colorMap,
+            colorMap: bumpMap,
             displacementMap: displacementMap,
             bumpMap: bumpMap,
 
