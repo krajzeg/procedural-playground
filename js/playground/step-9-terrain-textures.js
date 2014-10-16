@@ -180,7 +180,10 @@ var Earthlike = function() {
             // we will use some local variation too
             var variation = variationMap.get(x * 2 % textureWidth, y * 2 % textureHeight);
             // interpolate between the two grass colors
-            var alpha = clamp(lerp(temperature + variation * 13.0, 0.0, 30.0, 0.0, 1.0), 0.0, 1.0);
+            var alpha = clamp(
+                    lerp(temperature + variation * 13.0, 0.0, 30.0, 0.0, 1.0)
+                    + randomInRange(-0.2, 0.2),
+                    0.0, 1.0);
             return colorLerp(alpha, 0, 1, PaleGrass, LushGrass);
         }
 
