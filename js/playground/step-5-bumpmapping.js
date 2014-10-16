@@ -103,7 +103,7 @@ var Earthlike = function() {
 
         return {
             // we have generated almost everything
-            colorMap: bumpMap,
+            colorMap: colorMap,
             displacementMap: displacementMap,
             bumpMap: bumpMap,
 
